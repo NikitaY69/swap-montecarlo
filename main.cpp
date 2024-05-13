@@ -4,6 +4,8 @@
 #include <fstream>
 #include <cmath>
 #include <ctime>
+#include <algorithm>
+#include <sstream> 
 using namespace std;
 
 //  Parameters
