@@ -154,7 +154,7 @@ double PairPotential(double x1, double y1, double s1, double x2, double y2, doub
 //  Calculates potential of particle j
 double V(double xj, double yj, double rj, int j){
     double total = 0;
-    for (int i=0; i < numNeighbours[i]; i++){
+    for (int i=0; i < numNeighbours[j]; i++){
         int k = NL[j][i]; // index of the ith neighbor of the jth particle
         total += PairPotential(xj, yj, rj, X[k], Y[k], S[k]);
     }
@@ -266,7 +266,7 @@ void MC(){
         // Writing values to text file
 
         writefile1 << VTotal()/(2*N) << endl; // Write average energy per particle
-        
+
         if(Find(samplePoints, dataPoints, 1.0*x) != -1){ // checking if saving time
             if(samplePoints[dataCounter] != 0){
                 double FSavg = 0;
