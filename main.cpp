@@ -81,7 +81,7 @@ int main(int argc, const char * argv[]) {
     
     // Read data file
     std::string line;
-    std::ifstream myfile (motherdir + "config_init.txt");
+    std::ifstream myfile (motherdir + "aging/run_1/cfg_5000.txt");
     if (myfile.is_open()){
         int p = 0;
         while (getline(myfile, line)){
