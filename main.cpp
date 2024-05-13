@@ -83,19 +83,18 @@ int main(int argc, const char * argv[]) {
     std::string line;
     std::ifstream myfile (motherdir + "config_init.txt");
     if (myfile.is_open()){
-        int c = 0;
+        int p = 0;
         while (getline(myfile, line)){
-            int p = c-2;
+            // int p = c-2;
             // 1-15; 17-15; 33-15
-            if (c >= 2){
-                S[p] = std::stod(line.substr(1,15));
-                X[p] = std::stod(line.substr(17,15));
-                Y[p] = std::stod(line.substr(33,15));
-                X0[p] = X[p]; Y0[p] = Y[p]; S0[p] = S[p]; // positions/diameters at t0
-                Xref[p] = X[p]; Yref[p] = Y[p];
-                Xfull[p] = X[p]; Yfull[p] = Y[p];
-            }
-            c++;
+            // if (c >= 2){
+            S[p] = std::stod(line.substr(1,15));
+            X[p] = std::stod(line.substr(17,15));
+            Y[p] = std::stod(line.substr(33,15));
+            X0[p] = X[p]; Y0[p] = Y[p]; S0[p] = S[p]; // positions/diameters at t0
+            Xref[p] = X[p]; Yref[p] = Y[p];
+            Xfull[p] = X[p]; Yfull[p] = Y[p];
+            p++;
         }
         myfile.close();
     } else {
