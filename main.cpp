@@ -15,7 +15,7 @@ const int N = 2000; //Number of particles
 const double T = 1; //Temperature in units of 1/k_B
 const double Size = 44.721359550000003; //Size of the system
 
-const int nn = 55; //Maximum number of nearest neighbours
+// const int nn = 55; //Maximum number of nearest neighbours
 const double sigmaMax = 1.613048; //Maximum diameter of particles
 const double rSkin = 1.25 * sigmaMax; //Radius of neighbours included in NL (e.g. 1.8)
 const double rC = 1.25 * sigmaMax; //Cutoff radius for calculating potential
@@ -42,7 +42,7 @@ double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
 // 
 
 //  Neighbour List
-double NL[N][nn] = {0};
+double NL[N][N] = {0};
 int numNeighbours[N];
 
 //  Write to text file in same folder
@@ -108,7 +108,6 @@ int main(int argc, const char * argv[]) {
 
 //  Calculates difference of a and b while applying periodic boundary conditions
 double bcs(double a, double b) {return Size/2 - abs(abs(a-b)-Size/2);}
-// not sure to understand this formula
 
 //  Finds index of element in array
 int Find(double arr[], int len, double seek){
@@ -128,6 +127,13 @@ void UpdateList(){
             sortedRow[j] = rij2Row[j];
         }
         sort(sortedRow, sortedRow+N); // neighbors sorted with respect to the distance
+
+        // // finding number of effective neighbors
+        // auto NL_check = [&](int k){
+        //     return sortedRow[k] > rNL;
+        // };
+        // numNeighbours[i] = find_if(0, N, sortedRow[j]);
+        
         for (int j = 0; sortedRow[j] < rNL; j++){
             numNeighbours[i] = j; // numNeighbors[i] last saved value is the last j
             NL[i][j] = Find(rij2Row, N, sortedRow[j+1]);} 
