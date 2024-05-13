@@ -46,8 +46,8 @@ double NL[N][N] = {0};
 int numNeighbours[N];
 
 //  Write to text file in same folder
-ofstream writefile, writefile1;
-string outtext = "/Users/kimlam/Desktop/Part III Project/Project cpp/Project/Project/";
+ofstream log_obs, log_cfg, log_pot;
+string motherdir = "/home/allaglo/benchmarks/";
 
 //  Function prototypes
 double bcs(double a, double b);
@@ -56,7 +56,7 @@ void UpdateList();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
 double VTotal(), MSD(), FS(int tw, int tau, double theta);
-void TryDisp(int j), TrySwap(int j, int k), MC();
+void TryDisp(int j), TrySwap(int j, int k), MC(string out);
 
 //  Random number between 0 and 1
 #define ranf() \
@@ -67,7 +67,7 @@ void TryDisp(int j), TrySwap(int j, int k), MC();
 int main(int argc, const char * argv[]) {
     
     srand(time(NULL)*1.0); //Random number generator
-    
+    string outdir = motherdir + argv[1];
     // Get sample points for log scale
     int index = 0;
     for (int x = 0; x < dataPoints; x++){
@@ -80,26 +80,32 @@ int main(int argc, const char * argv[]) {
     
     // Read data file
     string line;
-    ifstream myfile (outtext + "data1.txt");
+    ifstream myfile (motherdir + "config_init.txt");
     if (myfile.is_open()){
         int c = 0;
         while (getline(myfile,line)){
-            X[c] = stod(line.substr(5,11));
-            Y[c] = stod(line.substr(21,11));
-            S[c] = stod(line.substr(37,11));
-            X0[c] = X[c]; Y0[c] = Y[c]; S0[c] = S[c]; // positions/diameters at t0
-            Xref[c] = X[c]; Yref[c] = Y[c];
-            Xfull[c] = X[c]; Yfull[c] = Y[c];
+            int p = c-2;
+            // 1-15; 17-15; 33-15
+            if (c >= 2){
+                S[p] = stod(line.substr(1,15));
+                X[p] = stod(line.substr(17,15));
+                Y[p] = stod(line.substr(33,15));
+                X0[p] = X[p]; Y0[p] = Y[p]; S0[p] = S[p]; // positions/diameters at t0
+                Xref[p] = X[p]; Yref[p] = Y[p];
+                Xfull[p] = X[p]; Yfull[p] = Y[p];
+            }
             c++;
         }
         myfile.close();
+    } else {
+        cout << motherdir + "config_init.txt" << endl;
+        return 0;
     }
     
     // Do simulation with timer
-    double t0 = time(NULL); //Timer
-    writefile.open (outtext + "Out1.txt"); writefile1.open (outtext + "VTotal.txt");
-    MC(); cout << "Time taken: " << (time(NULL) - t0) << "s" << endl; //Do MC simulation
-    writefile.close(); writefile1.close();
+    double t0 = time(NULL); // Timer
+    MC(outdir); cout << "Time taken: " << (time(NULL) - t0) << "s" << endl; // Do MC simulation
+    log_obs.close(); log_pot.close();
     //cout.precision(17);
     cout << fixed << "Done" << endl;
     return 0;
@@ -127,7 +133,7 @@ void UpdateList(){
             sortedRow[j] = rij2Row[j];
         }
         sort(sortedRow, sortedRow+N); // neighbors sorted with respect to the distance
-
+        
         // // finding number of effective neighbors
         // auto NL_check = [&](int k){
         //     return sortedRow[k] > rNL;
@@ -243,9 +249,11 @@ void TrySwap(int j, int k){
 }
 
 // Monte Carlo Simulation
-void MC(){
+void MC(string out){
     int dataCounter = 0; stepCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
+    log_obs.open(out + "obs.txt");
+    log_pot.open(out + "pot.txt");
     UpdateList();
     
     for(int x = 0; x < steps; x++){
@@ -268,29 +276,35 @@ void MC(){
                 }
             }
         }
-        
-        // Writing values to text file
-
-        writefile1 << VTotal()/(2*N) << endl; // Write average energy per particle
+        // Writing observables to text file
 
         if(Find(samplePoints, dataPoints, 1.0*x) != -1){ // checking if saving time
             if(samplePoints[dataCounter] != 0){
+                // Configs
+                int idx = int (samplePoints[dataCounter]);
+                log_cfg.open(out + "cfg_" + to_string(idx) + ".xy");
+                for (int i = 0; i<N; i++){
+                    log_cfg << S[i] << " " << X[i] << " " << Y[i] << endl;
+                }
+                log_cfg.close();
+                // Fs
                 double FSavg = 0;
                 for(int deg = 0; deg < 90; deg++){
                     FSavg += FS(0, steps, deg);
                 }
-                writefile << samplePoints[dataCounter] << " " << MSD() << " " << FSavg/90 << endl;
-            }   // saving format: timestep MSD Fs
+                log_obs << samplePoints[dataCounter] << " " << MSD() << " " << FSavg/90 << endl;
+                // saving format: timestep MSD Fs
+                log_pot << samplePoints[dataCounter] << " " << VTotal()/(2*N) << endl;
+            } 
             dataCounter++;
         }
-
+        
         // Doing the MC
         for (int i = 0; i < N; i++){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
             else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
-
+        
         stepCounter ++; if(stepCounter%100==0) cout << stepCounter << endl; // Counting steps
     }
 }
-
