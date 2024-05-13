@@ -6,10 +6,11 @@
 #include <ctime>
 #include <algorithm>
 #include <sstream> 
-using namespace std;
+#include <iomanip>
+// using namespace std;
 
 //  Parameters
-const int steps = 50000; //Monte Carlo steps
+const int steps = 5000; //Monte Carlo steps
 int stepCounter = 0; //Step counter
 const int N = 2000; //Number of particles
 const double T = 1; //Temperature in units of 1/k_B
@@ -24,7 +25,7 @@ const double deltaMax = 0.12; //Max particle displacement
 const double RUpdate = pow(rSkin,2)/4; //When R2Max exceeds this, update NL
 
 //  For log plots
-const int dataPoints = 1000;
+const int dataPoints = 100;
 double exponents = log10(steps)/dataPoints;
 double samplePoints[dataPoints];
 
@@ -46,8 +47,8 @@ double NL[N][N] = {0};
 int numNeighbours[N];
 
 //  Write to text file in same folder
-ofstream log_obs, log_cfg, log_pot;
-string motherdir = "/home/allaglo/benchmarks/";
+std::ofstream log_obs, log_cfg, log_pot;
+std::string motherdir = "/home/allaglo/benchmarks/";
 
 //  Function prototypes
 double bcs(double a, double b);
@@ -56,7 +57,7 @@ void UpdateList();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
 double VTotal(), MSD(), FS(int tw, int tau, double theta);
-void TryDisp(int j), TrySwap(int j, int k), MC(string out);
+void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 
 //  Random number between 0 and 1
 #define ranf() \
@@ -67,29 +68,29 @@ void TryDisp(int j), TrySwap(int j, int k), MC(string out);
 int main(int argc, const char * argv[]) {
     
     srand(time(NULL)*1.0); //Random number generator
-    string outdir = motherdir + argv[1];
+    std::string outdir = motherdir + argv[1];
     // Get sample points for log scale
     int index = 0;
-    for (int x = 0; x < dataPoints; x++){
+    for (int x = 0; x <= dataPoints; x++){
         double value = floor(pow(10,exponents*x));
         if(Find(samplePoints, dataPoints, value) == -1){
             samplePoints[index] = value;
             index++;}
-        // seems to me that this if condition unnecessary
+        // this if condition is actually relevent because of the floor function
     }
     
     // Read data file
-    string line;
-    ifstream myfile (motherdir + "config_init.txt");
+    std::string line;
+    std::ifstream myfile (motherdir + "config_init.txt");
     if (myfile.is_open()){
         int c = 0;
-        while (getline(myfile,line)){
+        while (getline(myfile, line)){
             int p = c-2;
             // 1-15; 17-15; 33-15
             if (c >= 2){
-                S[p] = stod(line.substr(1,15));
-                X[p] = stod(line.substr(17,15));
-                Y[p] = stod(line.substr(33,15));
+                S[p] = std::stod(line.substr(1,15));
+                X[p] = std::stod(line.substr(17,15));
+                Y[p] = std::stod(line.substr(33,15));
                 X0[p] = X[p]; Y0[p] = Y[p]; S0[p] = S[p]; // positions/diameters at t0
                 Xref[p] = X[p]; Yref[p] = Y[p];
                 Xfull[p] = X[p]; Yfull[p] = Y[p];
@@ -98,16 +99,17 @@ int main(int argc, const char * argv[]) {
         }
         myfile.close();
     } else {
-        cout << motherdir + "config_init.txt" << endl;
+        std::cout << motherdir + "config_init.txt" << std::endl;
         return 0;
     }
     
     // Do simulation with timer
     double t0 = time(NULL); // Timer
-    MC(outdir); cout << "Time taken: " << (time(NULL) - t0) << "s" << endl; // Do MC simulation
+    MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
+    // Do MC simulation
     log_obs.close(); log_pot.close();
     //cout.precision(17);
-    cout << fixed << "Done" << endl;
+    std::cout << "Done" << std::endl;
     return 0;
 }
 //---------------------------------------------------------
@@ -132,7 +134,7 @@ void UpdateList(){
             rij2Row[j] = (xij*xij)+(yij*yij);
             sortedRow[j] = rij2Row[j];
         }
-        sort(sortedRow, sortedRow+N); // neighbors sorted with respect to the distance
+        std::sort(sortedRow, sortedRow+N); // neighbors sorted with respect to the distance
         
         // // finding number of effective neighbors
         // auto NL_check = [&](int k){
@@ -249,11 +251,13 @@ void TrySwap(int j, int k){
 }
 
 // Monte Carlo Simulation
-void MC(string out){
+void MC(std::string out){
     int dataCounter = 0; stepCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     log_obs.open(out + "obs.txt");
+    log_obs << std::scientific << std::setprecision(8);
     log_pot.open(out + "pot.txt");
+    log_pot << std::scientific << std::setprecision(8);
     UpdateList();
     
     for(int x = 0; x < steps; x++){
@@ -265,7 +269,7 @@ void MC(string out){
                 deltaX[i] = bcs(X[i],X0[i]);
                 deltaY[i] = bcs(Y[i],Y0[i]);
                 deltaR2[i] = deltaX[i]*deltaX[i] + deltaY[i]*deltaY[i];
-                R2Max = max_element(deltaR2,deltaR2+N)[0];
+                R2Max = std::max_element(deltaR2,deltaR2+N)[0];
             }
             if(R2Max > RUpdate){
                 UpdateList();
@@ -282,9 +286,10 @@ void MC(string out){
             if(samplePoints[dataCounter] != 0){
                 // Configs
                 int idx = int (samplePoints[dataCounter]);
-                log_cfg.open(out + "cfg_" + to_string(idx) + ".xy");
+                log_cfg.open(out + "cfg_" + std::to_string(idx) + ".xy");
+                log_cfg << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
-                    log_cfg << S[i] << " " << X[i] << " " << Y[i] << endl;
+                    log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
                 }
                 log_cfg.close();
                 // Fs
@@ -292,9 +297,9 @@ void MC(string out){
                 for(int deg = 0; deg < 90; deg++){
                     FSavg += FS(0, steps, deg);
                 }
-                log_obs << samplePoints[dataCounter] << " " << MSD() << " " << FSavg/90 << endl;
+                log_obs << samplePoints[dataCounter] << " " << MSD() << " " << FSavg/90 << std::endl;
                 // saving format: timestep MSD Fs
-                log_pot << samplePoints[dataCounter] << " " << VTotal()/(2*N) << endl;
+                log_pot << samplePoints[dataCounter] << " " << VTotal()/(2*N) << std::endl;
             } 
             dataCounter++;
         }
@@ -304,7 +309,7 @@ void MC(string out){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
             else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
-        
-        stepCounter ++; if(stepCounter%100==0) cout << stepCounter << endl; // Counting steps
+
+        stepCounter ++; if(stepCounter%100==0) std:: cout << stepCounter << std::endl; // Counting steps
     }
 }
