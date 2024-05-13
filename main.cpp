@@ -244,8 +244,6 @@ void MC(){
     
     for(int x = 0; x < steps; x++){
         
-        writefile1 << VTotal()/(2*N) << endl; // Write average energy per particle
-        
         // Updating NL
         if(x % 150 == 0) {//Change number?
             // every 150 steps we check if we need to update the NL
@@ -265,13 +263,10 @@ void MC(){
             }
         }
         
-        // Doing the MC
-        for (int i = 0; i < N; i++){
-            if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
-            else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
-        }
-        
         // Writing values to text file
+
+        writefile1 << VTotal()/(2*N) << endl; // Write average energy per particle
+        
         if(Find(samplePoints, dataPoints, 1.0*x) != -1){ // checking if saving time
             if(samplePoints[dataCounter] != 0){
                 double FSavg = 0;
@@ -282,6 +277,13 @@ void MC(){
             }   // saving format: timestep MSD Fs
             dataCounter++;
         }
+
+        // Doing the MC
+        for (int i = 0; i < N; i++){
+            if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
+            else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
+        }
+
         stepCounter ++; if(stepCounter%100==0) cout << stepCounter << endl; // Counting steps
     }
 }
