@@ -47,7 +47,7 @@ double NL[N][N] = {0};
 int numNeighbours[N];
 
 //  Write to text file in same folder
-std::ofstream log_obs, log_cfg, log_pot;
+std::ofstream log_obs, log_cfg;
 std::string motherdir = "/home/allaglo/benchmarks/";
 
 //  Function prototypes
@@ -106,7 +106,7 @@ int main(int argc, const char * argv[]) {
     double t0 = time(NULL); // Timer
     MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     // Do MC simulation
-    log_obs.close(); log_pot.close();
+    log_obs.close();
     //cout.precision(17);
     std::cout << "Done" << std::endl;
     return 0;
@@ -255,8 +255,6 @@ void MC(std::string out){
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     log_obs.open(out + "obs.txt");
     log_obs << std::scientific << std::setprecision(8);
-    log_pot.open(out + "pot.txt");
-    log_pot << std::scientific << std::setprecision(8);
     UpdateList();
     
     for(int x = 0; x < steps; x++){
@@ -296,9 +294,9 @@ void MC(std::string out){
                 for(int deg = 0; deg < 90; deg++){
                     FSavg += FS(0, steps, deg);
                 }
-                log_obs << samplePoints[dataCounter] << " " << MSD() << " " << FSavg/90 << std::endl;
-                // saving format: timestep MSD Fs
-                log_pot << samplePoints[dataCounter] << " " << VTotal()/(2*N) << std::endl;
+                log_obs << samplePoints[dataCounter] << " " << VTotal()/(2*N) << " " 
+                        << MSD() << " " << FSavg/90 << std::endl;
+                // saving format: timestep Vtot MSD Fs
             } 
             dataCounter++;
         }
