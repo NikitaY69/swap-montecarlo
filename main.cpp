@@ -25,6 +25,7 @@ const double rC = 1.25 * sigmaMax; //Cutoff radius for calculating potential
 const double rNL = pow(rC+rSkin,2); //NL radius squared
 const double deltaMax = 0.12; //Max particle displacement
 const double RUpdate = pow(rSkin,2)/4; //When R2Max exceeds this, update NL
+const double x_max = 1.3; // maximal value of r/s for the real neighbours
 
 //  For log plots
 const int dataPoints = 100;
@@ -47,7 +48,7 @@ double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
 //  Neighbour List
 double NL[N][N] = {0};
 int numNeighbours[N];
-std::vector< std::vector<int> > nn_t0;
+std::vector< std::vector<int> > all_nn0;
 
 //  Write to text file in same folder
 std::ofstream log_obs, log_cfg;
@@ -104,6 +105,11 @@ int main(int argc, const char * argv[]) {
     } else {
         std::cout << motherdir + "config_init.txt" << std::endl;
         return 0;
+    }
+
+    // Building list of first neighbours
+    for (int i=0; i<N; i++){
+        all_nn0.push_back(nearest_neighbours(i, x_max));
     }
 
     // for (int i=0; i<N; i++){
@@ -242,20 +248,24 @@ std::vector<int> nearest_neighbours(int j, double x){
 }
 
 // Computes the bond-breaking correlation function (local)
-// double CBLoc(int j){
-//     double x_max = 1.3;
-//     std::vector<int> nn0 = all_nn0[j]; // neighbors at t=0
-//     std::vector<int> nn = nearest_neighbours(j, x_max);
-    
-// }
+double CBLoc(int j){
+    std::vector<int> intersect;
+    std::vector<int> nn0 = all_nn0[j]; // neighbors at t=0
+    std::vector<int> nn = nearest_neighbours(j, x_max);
+    std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
+                     std::back_inserter(intersect));
+
+    double frac = intersect.size()/nn0.size();
+    return frac;
+}
 
 // Computes the bond-breaking correlation function (averaged)
-// double CB(){
-//     double tot = 0;
-//     for (int j=0; j<N; j++){
-//         tot += CBLoc(j);
-//     } return tot/N;
-// }
+double CB(){
+    double tot = 0;
+    for (int j=0; j<N; j++){
+        tot += CBLoc(j);
+    } return tot/N;
+}
 
 //  Tries displacing one particle j by vector dr = (dx, dy)
 void TryDisp(int j){
