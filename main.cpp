@@ -348,8 +348,8 @@ void MC(std::string out){
                     FSavg += FS(0, steps, deg);
                 }
                 log_obs << samplePoints[dataCounter] << " " << VTotal()/(2*N) << " " 
-                        << MSD() << " " << FSavg/90 << std::endl;
-                // saving format: timestep Vtot MSD Fs
+                        << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
+                // saving format: timestep Vtot MSD Fs CB
             } 
             dataCounter++;
         }
