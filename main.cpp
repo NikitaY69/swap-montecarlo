@@ -86,7 +86,7 @@ int main(int argc, const char * argv[]) {
     
     // Read data file
     std::string line;
-    std::ifstream myfile (motherdir + "config_init.txt");
+    std::ifstream myfile (outdir + "config_init.txt");
     if (myfile.is_open()){
         int p = 0;
         while (getline(myfile, line)){
@@ -103,7 +103,7 @@ int main(int argc, const char * argv[]) {
         }
         myfile.close();
     } else {
-        std::cout << motherdir + "config_init.txt" << std::endl;
+        std::cout << outdir + "config_init.txt" << std::endl;
         return 0;
     }
 
