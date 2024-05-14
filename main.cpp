@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <sstream> 
 #include <iomanip>
+#include <list>
+#include <vector> 
 // using namespace std;
 
 //  Parameters
@@ -45,6 +47,7 @@ double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
 //  Neighbour List
 double NL[N][N] = {0};
 int numNeighbours[N];
+std::vector< std::vector<int> > nn_t0;
 
 //  Write to text file in same folder
 std::ofstream log_obs, log_cfg;
@@ -56,7 +59,8 @@ int Find(double arr[], int len, double seek);
 void UpdateList();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
-double VTotal(), MSD(), FS(int tw, int tau, double theta);
+std::vector<int> nearest_neighbours(int j, double x);
+double VTotal(), CBLoc(int j), CB(), MSD(), FS(int tw, int tau, double theta);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 
 //  Random number between 0 and 1
@@ -68,7 +72,7 @@ void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 int main(int argc, const char * argv[]) {
     
     srand(time(NULL)*1.0); //Random number generator
-    std::string outdir = motherdir + argv[1];
+    // std::string outdir = motherdir + argv[1];
     // Get sample points for log scale
     int index = 0;
     for (int x = 0; x <= dataPoints; x++){
@@ -81,7 +85,7 @@ int main(int argc, const char * argv[]) {
     
     // Read data file
     std::string line;
-    std::ifstream myfile (motherdir + "aging/run_1/cfg_5000.txt");
+    std::ifstream myfile (motherdir + "config_init.txt");
     if (myfile.is_open()){
         int p = 0;
         while (getline(myfile, line)){
@@ -101,14 +105,23 @@ int main(int argc, const char * argv[]) {
         std::cout << motherdir + "config_init.txt" << std::endl;
         return 0;
     }
-    
+
+    // for (int i=0; i<N; i++){
+    //     std::cout << "##########################################" << std::endl;
+    //     std::cout << "Particle " << i << std::endl;
+    //     for (int n: nearest_neighbours(i, 1.3)){
+    //         std::cout << n << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+
     // Do simulation with timer
-    double t0 = time(NULL); // Timer
-    MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
-    // Do MC simulation
-    log_obs.close();
-    //cout.precision(17);
-    std::cout << "Done" << std::endl;
+    // double t0 = time(NULL); // Timer
+    // MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
+    // // Do MC simulation
+    // log_obs.close();
+    // //cout.precision(17);
+    // std::cout << "Done" << std::endl;
     return 0;
 }
 //---------------------------------------------------------
@@ -148,6 +161,7 @@ void UpdateList(){
         //cout << numNeighbours[i] << endl;
     }
 }
+
 
 //  Calculates the potential of a pair of particles
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2){
@@ -213,6 +227,35 @@ double FS(int tw, int tau, double theta){
     }
     return sum/N;
 }
+
+// Computes the nearest neighbours of particle j at a given radius
+std::vector<int> nearest_neighbours(int j, double x){
+    std::list<int> nn {};
+    for (int i=0; i < N && i!=j; i++){
+        double sigmaij = (S[i]+S[j])*(1-0.2*abs(S[i]-S[j]))/2;
+        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+        double rij = sqrt((xij*xij)+(yij*yij));
+        if (rij < x*sigmaij){
+            nn.push_back(i);
+        }
+    } return std::vector<int> { std::begin(nn), std::end(nn) } ;
+}
+
+// Computes the bond-breaking correlation function (local)
+// double CBLoc(int j){
+//     double x_max = 1.3;
+//     std::vector<int> nn0 = all_nn0[j]; // neighbors at t=0
+//     std::vector<int> nn = nearest_neighbours(j, x_max);
+    
+// }
+
+// Computes the bond-breaking correlation function (averaged)
+// double CB(){
+//     double tot = 0;
+//     for (int j=0; j<N; j++){
+//         tot += CBLoc(j);
+//     } return tot/N;
+// }
 
 //  Tries displacing one particle j by vector dr = (dx, dy)
 void TryDisp(int j){
