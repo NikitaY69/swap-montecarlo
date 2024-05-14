@@ -88,20 +88,20 @@ int main(int argc, const char * argv[]) {
     std::string line;
     std::ifstream myfile (outdir + "config_init.txt");
     if (myfile.is_open()){
-        int p = 0;
-        while (getline(myfile, line)){
-            // int p = c-2;
-            // 1-15; 17-15; 33-15
-            // if (c >= 2){
-            S[p] = std::stod(line.substr(1,15));
-            X[p] = std::stod(line.substr(17,15));
-            Y[p] = std::stod(line.substr(33,15));
-            X0[p] = X[p]; Y0[p] = Y[p]; S0[p] = S[p]; // positions/diameters at t0
-            Xref[p] = X[p]; Yref[p] = Y[p];
-            Xfull[p] = X[p]; Yfull[p] = Y[p];
-            p++;
-        }
+        int i = 0; // particle index
+        std::vector<std::vector<double>> cfg; // array of configurations
+        while (std::getline(myfile, line)){
+            double value;
+            std::stringstream ss(line);
+
+            cfg.push_back(std::vector<double>());
+            while (ss >> value){
+                cfg[i].push_back(value);
+            }
+            S[i] = cfg[i][0]; X[i] = cfg[i][1]; Y[i] = cfg[i][2];
+            i++;}
         myfile.close();
+
     } else {
         std::cout << outdir + "config_init.txt" << std::endl;
         return 0;
