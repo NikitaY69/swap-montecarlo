@@ -72,7 +72,7 @@ void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 int main(int argc, const char * argv[]) {
     
     srand(time(NULL)*1.0); //Random number generator
-    // std::string outdir = motherdir + argv[1];
+    std::string outdir = motherdir + argv[1];
     // Get sample points for log scale
     int index = 0;
     for (int x = 0; x <= dataPoints; x++){
@@ -110,24 +110,24 @@ int main(int argc, const char * argv[]) {
     //     std::cout << "##########################################" << std::endl;
     //     std::cout << "Particle " << i << std::endl;
     //     for (int n: nearest_neighbours(i, 1.3)){
-    //         std::cout << n << " ";
+    //         std::cout << n << " " << std::endl;
     //     }
     //     std::cout << std::endl;
     // }
 
     // Do simulation with timer
-    // double t0 = time(NULL); // Timer
-    // MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
-    // // Do MC simulation
-    // log_obs.close();
-    // //cout.precision(17);
-    // std::cout << "Done" << std::endl;
+    double t0 = time(NULL); // Timer
+    MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
+    // Do MC simulation
+    log_obs.close();
+    //cout.precision(17);
+    std::cout << "Done" << std::endl;
     return 0;
 }
 //---------------------------------------------------------
 
 //  Calculates difference of a and b while applying periodic boundary conditions
-double bcs(double a, double b) {return Size/2 - abs(abs(a-b)-Size/2);}
+double bcs(double a, double b) {return Size/2 - std::abs(std::abs(a-b)-Size/2);}
 
 //  Finds index of element in array
 int Find(double arr[], int len, double seek){
@@ -231,11 +231,11 @@ double FS(int tw, int tau, double theta){
 // Computes the nearest neighbours of particle j at a given radius
 std::vector<int> nearest_neighbours(int j, double x){
     std::list<int> nn {};
-    for (int i=0; i < N && i!=j; i++){
+    for (int i=0; i<N; i++){
         double sigmaij = (S[i]+S[j])*(1-0.2*abs(S[i]-S[j]))/2;
         double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
         double rij = sqrt((xij*xij)+(yij*yij));
-        if (rij < x*sigmaij){
+        if (rij < x*sigmaij && i != j){
             nn.push_back(i);
         }
     } return std::vector<int> { std::begin(nn), std::end(nn) } ;
