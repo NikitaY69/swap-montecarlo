@@ -239,8 +239,12 @@ double CBLoc(int j){
     std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
                      std::back_inserter(intersect));
 
-    double frac = intersect.size()/nn0.size();
-    return frac;
+    if (nn0.size()==0){
+        return 0;
+    } else { 
+        double frac = intersect.size()/nn0.size();
+        return frac;
+    }
 }
 
 // Computes the bond-breaking correlation function (averaged)
