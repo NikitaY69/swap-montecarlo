@@ -41,13 +41,12 @@ const double pi = 3.14159265358979323846;
 //  Arrays
 double X[N],Y[N],S[N],X0[N],Y0[N],S0[N];
 double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
-// Xref=X0 ?
+// Xref=X0 ? Ans: X0 is initial position at last neighbour list update
 // seems like Xfull is non-periodic while X is
 // 
 
 //  Neighbour List
-double NL[N][N] = {0};
-int numNeighbours[N];
+std::vector< std::vector<int> > NL;
 std::vector< std::vector<int> > all_nn0;
 
 //  Write to text file in same folder
@@ -60,7 +59,7 @@ int Find(double arr[], int len, double seek);
 void UpdateList();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
-std::vector<int> nearest_neighbours(int j, double x);
+std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
 double VTotal(), CBLoc(int j), CB(), MSD(), FS(int tw, int tau, double theta);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 
@@ -112,15 +111,7 @@ int main(int argc, const char * argv[]) {
         all_nn0.push_back(nearest_neighbours(i, x_max));
     }
 
-    // for (int i=0; i<N; i++){
-    //     std::cout << "##########################################" << std::endl;
-    //     std::cout << "Particle " << i << std::endl;
-    //     for (int n: nearest_neighbours(i, 1.3)){
-    //         std::cout << n << " " << std::endl;
-    //     }
-    //     std::cout << std::endl;
-    // }
-
+    UpdateList();
     // Do simulation with timer
     double t0 = time(NULL); // Timer
     MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
@@ -145,29 +136,36 @@ int Find(double arr[], int len, double seek){
 //  Creates the neighbour list for the set of particles, with another list which contains the number of nearest neighbours of each of the N particles.
 //  Returns a (N x nn) matrix containing the labels of the neighbours.
 void UpdateList(){
-    double rij2Row[N], sortedRow[N];
     for (int i = 0; i < N; i++){
-        for (int j = 0; j < N; j++){
-            double xij = bcs(X[j], X[i]); double yij = bcs(Y[j], Y[i]);
-            rij2Row[j] = (xij*xij)+(yij*yij);
-            sortedRow[j] = rij2Row[j];
-        }
-        std::sort(sortedRow, sortedRow+N); // neighbors sorted with respect to the distance
-        
-        // // finding number of effective neighbors
-        // auto NL_check = [&](int k){
-        //     return sortedRow[k] > rNL;
-        // };
-        // numNeighbours[i] = find_if(0, N, sortedRow[j]);
-        
-        for (int j = 0; sortedRow[j] < rNL; j++){
-            numNeighbours[i] = j; // numNeighbors[i] last saved value is the last j
-            NL[i][j] = Find(rij2Row, N, sortedRow[j+1]);} 
-            // index of the jth neighbor of the ith particle 
-        //cout << numNeighbours[i] << endl;
+        NL.push_back(effective_neighbours(i));
     }
 }
 
+// Computes the effective neighbours of particle j
+std::vector<int> effective_neighbours(int j){
+    std::vector<int> neigh;
+    for (int i=0; i<N; i++){
+        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+        double rij2 = (xij*xij)+(yij*yij);
+        if (rij2 < rNL && i != j){
+            neigh.push_back(i);
+        }
+    }
+    return neigh;
+}
+
+// Computes the nearest neighbours of particle j at a given radius
+std::vector<int> nearest_neighbours(int j, double x){
+    std::vector<int> nn;
+    for (int i=0; i<N; i++){
+        double sigmaij = (S[i]+S[j])*(1-0.2*abs(S[i]-S[j]))/2;
+        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+        double rij = sqrt((xij*xij)+(yij*yij));
+        if (rij < x*sigmaij && i != j){
+            nn.push_back(i);
+        }
+    } return nn;
+}
 
 //  Calculates the potential of a pair of particles
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2){
@@ -187,11 +185,9 @@ double PairPotential(double x1, double y1, double s1, double x2, double y2, doub
 //  Calculates potential of particle j
 double V(double xj, double yj, double rj, int j){
     double total = 0;
-    for (int i=0; i < numNeighbours[j]; i++){
-        int k = NL[j][i]; // index of the ith neighbor of the jth particle
+    for (int k: NL[j]){
         total += PairPotential(xj, yj, rj, X[k], Y[k], S[k]);
-    }
-    return total;
+    } return total;
 }
 
 //  Calculates total system energy
@@ -232,19 +228,6 @@ double FS(int tw, int tau, double theta){
         }
     }
     return sum/N;
-}
-
-// Computes the nearest neighbours of particle j at a given radius
-std::vector<int> nearest_neighbours(int j, double x){
-    std::list<int> nn {};
-    for (int i=0; i<N; i++){
-        double sigmaij = (S[i]+S[j])*(1-0.2*abs(S[i]-S[j]))/2;
-        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
-        double rij = sqrt((xij*xij)+(yij*yij));
-        if (rij < x*sigmaij && i != j){
-            nn.push_back(i);
-        }
-    } return std::vector<int> { std::begin(nn), std::end(nn) } ;
 }
 
 // Computes the bond-breaking correlation function (local)
@@ -322,6 +305,7 @@ void MC(std::string out){
                 R2Max = std::max_element(deltaR2,deltaR2+N)[0];
             }
             if(R2Max > RUpdate){
+                NL.clear();
                 UpdateList();
                 R2Max = 0;
                 for(int j = 0; j < N; j++){
@@ -335,7 +319,7 @@ void MC(std::string out){
         if(Find(samplePoints, dataPoints, 1.0*x) != -1){ // checking if saving time
             if(samplePoints[dataCounter] != 0){
                 // Configs
-                int idx = int (samplePoints[dataCounter]);
+                int idx = int(samplePoints[dataCounter]);
                 log_cfg.open(out + "cfg_" + std::to_string(idx) + ".xy");
                 log_cfg << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
