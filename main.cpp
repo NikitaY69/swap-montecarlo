@@ -113,7 +113,6 @@ int main(int argc, const char * argv[]) {
         all_nn0.push_back(nearest_neighbours(i, x_max));
     }
 
-    UpdateList();
     // Do simulation with timer
     double t0 = time(NULL); // Timer
     MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
@@ -293,7 +292,6 @@ void MC(std::string out){
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     log_obs.open(out + "obs.txt");
     log_obs << std::scientific << std::setprecision(8);
-    UpdateList();
     
     for(int x = 0; x < steps; x++){
         
