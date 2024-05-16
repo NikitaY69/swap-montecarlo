@@ -98,6 +98,8 @@ int main(int argc, const char * argv[]) {
                 cfg[i].push_back(value);
             }
             S[i] = cfg[i][0]; X[i] = cfg[i][1]; Y[i] = cfg[i][2];
+            X0[i] = X[i]; Xfull[i] = X[i]; Xref[i] = X[i];
+            Y0[i] = Y[i]; Yfull[i] = Y[i]; Yref[i] = Y[i];
             i++;}
         myfile.close();
 
