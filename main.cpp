@@ -12,7 +12,8 @@
 // using namespace std;
 
 //  Parameters
-const int steps = 5000; //Monte Carlo steps
+const int steps = 10000; //Monte Carlo steps
+const int tau = 5000; //Observables age
 int stepCounter = 0; //Step counter
 const int N = 2000; //Number of particles
 const double T = 1; //Temperature in units of 1/k_B
@@ -28,7 +29,7 @@ const double RUpdate = pow(rSkin,2)/4; //When R2Max exceeds this, update NL
 const double x_max = 1.3; // maximal value of r/s for the real neighbours
 
 //  For log plots
-const int dataPoints = 100;
+const int dataPoints = 500;
 double exponents = log10(steps)/dataPoints;
 double samplePoints[dataPoints];
 
@@ -39,11 +40,13 @@ const double c4 = -21/pow(1.25,16);
 const double pi = 3.14159265358979323846;
 
 //  Arrays
-double X[N],Y[N],S[N],X0[N],Y0[N],S0[N];
+double X[N],Y[N],S[N],X0[N],Y0[N];
 double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
-// Xref=X0 ? Ans: X0 is initial position at last neighbour list update
-// seems like Xfull is non-periodic while X is
-// 
+// X0 initial position at last neighbour list update
+// Xfull real positions (not taking into account periodic boundaries)
+// Xref positition at t=0
+// Xtw position at last aging update
+
 
 //  Neighbour List
 std::vector< std::vector<int> > NL;
@@ -60,7 +63,7 @@ void UpdateList();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
 std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
-double VTotal(), CBLoc(int j), CB(), MSD(), FS(int tw, int tau, double theta);
+double VTotal(), CBLoc(int j), CB(int tw, int tau), MSD(), FS(double theta);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 
 //  Random number between 0 and 1
@@ -72,7 +75,8 @@ void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 int main(int argc, const char * argv[]) {
     
     srand(time(NULL)*1.0); //Random number generator
-    std::string outdir = motherdir + argv[1];
+    std::string input = motherdir + argv[1];
+    std::string outdir = motherdir + argv[2];
     // Get sample points for log scale
     int index = 0;
     for (int x = 0; x <= dataPoints; x++){
@@ -85,7 +89,7 @@ int main(int argc, const char * argv[]) {
     
     // Read data file
     std::string line;
-    std::ifstream myfile (outdir + "config_init.txt");
+    std::ifstream myfile (input);
     if (myfile.is_open()){
         int i = 0; // particle index
         std::vector<std::vector<double>> cfg; // array of configurations
@@ -104,7 +108,7 @@ int main(int argc, const char * argv[]) {
         myfile.close();
 
     } else {
-        std::cout << outdir + "config_init.txt" << std::endl;
+        std::cout << input << std::endl;
         return 0;
     }
 
@@ -112,6 +116,7 @@ int main(int argc, const char * argv[]) {
     for (int i=0; i<N; i++){
         all_nn0.push_back(nearest_neighbours(i, x_max));
     }
+    UpdateList();
 
     // Do simulation with timer
     double t0 = time(NULL); // Timer
@@ -212,21 +217,15 @@ double MSD(){
 }
 
 //  Calculates the self scattering function
-double FS(int tw, int tau, double theta){
+double FS(double theta){
     double dotProduct;
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
-    if ((stepCounter >= tw) and (stepCounter < tw + tau)){
-        for (int i = 0; i < N; i++){
-            if(stepCounter == tw){
-                Xtw[i] = Xfull[i];
-                Ytw[i] = Yfull[i];
-            }
-            deltaX = Xfull[i]-Xtw[i];
-            deltaY = Yfull[i]-Ytw[i];
-            dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
-            sum += cos(dotProduct);
-        }
+    for (int i = 0; i < N; i++){
+        deltaX = Xfull[i]-Xtw[i];
+        deltaY = Yfull[i]-Ytw[i];
+        dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
+        sum += cos(dotProduct);
     }
     return sum/N;
 }
@@ -244,7 +243,7 @@ double CBLoc(int j){
     } else { 
         double frac = intersect.size()/nn0.size();
         return frac;
-    }
+    } 
 }
 
 // Computes the bond-breaking correlation function (averaged)
@@ -318,6 +317,16 @@ void MC(std::string out){
                 }
             }
         }
+
+        // Resetting observables after tau steps
+        if (stepCounter % tau == 0){
+            all_nn0.clear();
+            for (int i=0; i<N; i++){
+                all_nn0.push_back(nearest_neighbours(i, x_max));
+                Xtw[i] = Xfull[i];
+                Ytw[i] = Yfull[i];
+            }
+        }
         // Writing observables to text file
 
         if(Find(samplePoints, dataPoints, 1.0*x) != -1){ // checking if saving time
@@ -333,7 +342,7 @@ void MC(std::string out){
                 // Fs
                 double FSavg = 0;
                 for(int deg = 0; deg < 90; deg++){
-                    FSavg += FS(0, steps, deg);
+                    FSavg += FS(deg);
                 }
                 log_obs << samplePoints[dataCounter] << " " << VTotal()/(2*N) << " " 
                         << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
