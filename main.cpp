@@ -9,12 +9,10 @@
 #include <iomanip>
 #include <list>
 #include <vector> 
-// using namespace std;
 
 //  Parameters
 const int steps = 10000; //Monte Carlo steps
-const int tau = 5000; //Observables age
-int stepCounter = 0; //Step counter
+const int tau = 10000; //Observables age
 const int N = 2000; //Number of particles
 const double T = 1; //Temperature in units of 1/k_B
 const double Size = 44.721359550000003; //Size of the system
@@ -29,9 +27,11 @@ const double RUpdate = pow(rSkin,2)/4; //When R2Max exceeds this, update NL
 const double x_max = 1.3; // maximal value of r/s for the real neighbours
 
 //  For log plots
-const int dataPoints = 500;
-double exponents = log10(steps)/dataPoints;
-double samplePoints[dataPoints];
+const int dataPoints = 100;
+const int cycles = steps/tau; 
+const int cyclPoints = dataPoints/cycles;
+double data_exponents = log10(steps)/dataPoints, cycl_exponents = log10(tau)/cyclPoints;
+double dataSample[dataPoints], cyclSample[cyclPoints];
 
 //  Constants
 const double c0 = -28/pow(1.25,12);
@@ -40,8 +40,8 @@ const double c4 = -21/pow(1.25,16);
 const double pi = 3.14159265358979323846;
 
 //  Arrays
-double X[N],Y[N],S[N],X0[N],Y0[N];
-double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
+std::array<double, N> X, Y, S, X0, Y0;
+std::array<double, N> Xfull, Yfull, Xref, Yref, Xtw, Ytw, Xtmp, Ytmp;
 // X0 initial position at last neighbour list update
 // Xfull real positions (not taking into account periodic boundaries)
 // Xref positition at t=0
@@ -50,10 +50,10 @@ double Xfull[N],Yfull[N],Xref[N],Yref[N],Xtw[N],Ytw[N];
 
 //  Neighbour List
 std::vector< std::vector<int> > NL;
-std::vector< std::vector<int> > all_nn0;
+std::vector< std::vector<int> > nn_0, nn_tw, nn_tmp;
 
 //  Write to text file in same folder
-std::ofstream log_obs, log_cfg;
+std::ofstream log_obs, log_cfg;//, log_cycl;
 std::string motherdir = "/home/allaglo/benchmarks/";
 
 //  Function prototypes
@@ -70,7 +70,7 @@ void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 #define ranf() \
     ((double)rand()/(1.0+RAND_MAX)) //check random numbers
 
-//---------------------------------------------------------
+//-----------------------------------------------------------------------------
 //  main.cpp
 int main(int argc, const char * argv[]) {
     
@@ -80,11 +80,20 @@ int main(int argc, const char * argv[]) {
     // Get sample points for log scale
     int index = 0;
     for (int x = 0; x <= dataPoints; x++){
-        double value = floor(pow(10,exponents*x));
-        if(Find(samplePoints, dataPoints, value) == -1){
-            samplePoints[index] = value;
+        double datav = floor(pow(10,data_exponents*x));
+        if(Find(dataSample, dataPoints, datav) == -1){
+            dataSample[index] = datav;
             index++;}
         // this if condition is actually relevent because of the floor function
+    }
+    if(cycles>1){
+        index = 0;
+        for (int x = 0; x <= cyclPoints; x++){
+        double cyclv = floor(pow(10, cycl_exponents*x));
+        if(Find(cyclSample, dataPoints, cyclv) == -1){
+            cyclSample[index] = cyclv;
+            index++;}
+    }
     }
     
     // Read data file
@@ -114,7 +123,7 @@ int main(int argc, const char * argv[]) {
 
     // Building list of first neighbours
     for (int i=0; i<N; i++){
-        all_nn0.push_back(nearest_neighbours(i, x_max));
+        nn_0.push_back(nearest_neighbours(i, x_max));
     }
     UpdateList();
 
@@ -122,7 +131,7 @@ int main(int argc, const char * argv[]) {
     double t0 = time(NULL); // Timer
     MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     // Do MC simulation
-    log_obs.close();
+    log_obs.close();//, log_cycl.close();
     //cout.precision(17);
     std::cout << "Done" << std::endl;
     return 0;
@@ -222,8 +231,8 @@ double FS(double theta){
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
     for (int i = 0; i < N; i++){
-        deltaX = Xfull[i]-Xtw[i];
-        deltaY = Yfull[i]-Ytw[i];
+        deltaX = Xfull[i]-Xref[i];
+        deltaY = Yfull[i]-Yref[i];
         dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
         sum += cos(dotProduct);
     }
@@ -233,7 +242,7 @@ double FS(double theta){
 // Computes the bond-breaking correlation function (local)
 double CBLoc(int j){
     std::vector<int> intersect;
-    std::vector<int> nn0 = all_nn0[j]; // neighbors at t=0
+    std::vector<int> nn0 = nn_0[j]; // neighbors at t=0
     std::vector<int> nn = nearest_neighbours(j, x_max);
     std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
                      std::back_inserter(intersect));
@@ -291,11 +300,12 @@ void TrySwap(int j, int k){
 
 // Monte Carlo Simulation
 void MC(std::string out){
-    int dataCounter = 0; stepCounter = 0;
+    int dataCounter = 0, cyclCounter = 0, stepCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
-    log_obs.open(out + "obs.txt");
+    log_obs.open(out + "obs.txt"); // log_cycl.open(out + "cycles.txt");
     log_obs << std::scientific << std::setprecision(8);
-    
+    // log_cycl << std::scientific << std::setprecision(8);
+
     for(int x = 0; x < steps; x++){
         
         // Updating NL
@@ -319,20 +329,21 @@ void MC(std::string out){
         }
 
         // Resetting observables after tau steps
-        if (stepCounter % tau == 0){
-            all_nn0.clear();
-            for (int i=0; i<N; i++){
-                all_nn0.push_back(nearest_neighbours(i, x_max));
-                Xtw[i] = Xfull[i];
-                Ytw[i] = Yfull[i];
-            }
-        }
+        // if (cycles > 1 && stepCounter % tau == 0){
+        //     cyclCounter = 0;
+        //     nn_tw.clear();
+        //     for (int i=0; i<N; i++){
+        //         nn_tw.push_back(nearest_neighbours(i, x_max));
+        //         Xtw[i] = Xfull[i];
+        //         Ytw[i] = Yfull[i];
+        //     }
+        // }
         // Writing observables to text file
 
-        if(Find(samplePoints, dataPoints, 1.0*x) != -1){ // checking if saving time
-            if(samplePoints[dataCounter] != 0){
+        if(Find(dataSample, dataPoints, 1.0*x) != -1){ // checking if saving time
+            if(dataSample[dataCounter] != 0){
                 // Configs
-                int idx = int(samplePoints[dataCounter]);
+                int idx = int(dataSample[dataCounter]);
                 log_cfg.open(out + "cfg_" + std::to_string(idx) + ".xy");
                 log_cfg << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
@@ -340,17 +351,32 @@ void MC(std::string out){
                 }
                 log_cfg.close();
                 // Fs
+                // Xtmp = Xref; Ytmp = Yref; nn_tmp = nn_0;
                 double FSavg = 0;
                 for(int deg = 0; deg < 90; deg++){
                     FSavg += FS(deg);
                 }
-                log_obs << samplePoints[dataCounter] << " " << VTotal()/(2*N) << " " 
-                        << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
-                // saving format: timestep Vtot MSD Fs CB
+                log_obs << dataSample[dataCounter] << " " << VTotal()/(2*N) << " " 
+                        << MSD() << " " << FSavg/90 << std::endl;
+                // saving format: timestep Vtot MSD Fs CB 
+                
             } 
             dataCounter++;
         }
-        
+        // if(Find(cyclSample, cyclPoints, 1.0*(x%tau)) != -1 && cycles > 1){ // 
+        //     if(cyclSample[cyclCounter] != 0){
+        //         // Fs
+        //         Xtmp = Xtw; Ytmp = Ytw; nn_tmp = nn_tw;
+        //         double FSavg = 0;
+        //         for(int deg = 0; deg < 90; deg++){
+        //             FSavg += FS(deg);
+        //         }
+        //         log_cycl << cyclSample[cyclCounter] << " " << FSavg/90 << " " 
+        //                 << CB() << std::endl;
+        //         // saving format: timestep Fs CB
+        //     }
+        //     cyclCounter++;
+        // }
         // Doing the MC
         for (int i = 0; i < N; i++){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
