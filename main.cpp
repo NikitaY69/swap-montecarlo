@@ -86,15 +86,15 @@ int main(int argc, const char * argv[]) {
             index++;}
         // this if condition is actually relevent because of the floor function
     }
-    if(cycles>1){
-        index = 0;
-        for (int x = 0; x <= cyclPoints; x++){
-        double cyclv = floor(pow(10, cycl_exponents*x));
-        if(Find(cyclSample, dataPoints, cyclv) == -1){
-            cyclSample[index] = cyclv;
-            index++;}
-    }
-    }
+    // if(cycles>1){
+    //     index = 0;
+    //     for (int x = 0; x <= cyclPoints; x++){
+    //     double cyclv = floor(pow(10, cycl_exponents*x));
+    //     if(Find(cyclSample, dataPoints, cyclv) == -1){
+    //         cyclSample[index] = cyclv;
+    //         index++;}
+    // }
+    // }
     
     // Read data file
     std::string line;
