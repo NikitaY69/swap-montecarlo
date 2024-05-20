@@ -12,7 +12,7 @@
 // using namespace std;
 
 //  Parameters
-const int steps = 5000; //Monte Carlo steps
+const int steps = 10000; //Monte Carlo steps
 int stepCounter = 0; //Step counter
 const int N = 2000; //Number of particles
 const double T = 1; //Temperature in units of 1/k_B
@@ -99,6 +99,8 @@ int main(int argc, const char * argv[]) {
                 cfg[i].push_back(value);
             }
             S[i] = cfg[i][0]; X[i] = cfg[i][1]; Y[i] = cfg[i][2];
+            X0[i] = X[i]; Y0[i] = Y[i]; Xfull[i] = X[i]; Yfull[i] = Y[i];
+            Xref[i] = X[i]; Yref[i] = Y[i]; Xtw[i] = X[i]; Ytw[i] = Y[i];
             i++;}
         myfile.close();
 
