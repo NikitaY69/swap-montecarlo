@@ -173,7 +173,7 @@ void UpdateList(){
 
 //  Calculates the potential of a pair of particles
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2){
-    double sigmaij = (s1+s2)*(1-0.2*abs(s1-s2))/2;
+    double sigmaij = (s1+s2)*(1-0.2*std::abs(s1-s2))/2;
     double sigma2 = sigmaij*sigmaij;
     double rc2 = 1.25 * 1.25 * sigma2;
     double xij = bcs(x1, x2); double yij = bcs(y1, y2);
@@ -240,7 +240,7 @@ double FS(int tw, int tau, double theta){
 std::vector<int> nearest_neighbours(int j, double x){
     std::list<int> nn {};
     for (int i=0; i<N; i++){
-        double sigmaij = (S[i]+S[j])*(1-0.2*abs(S[i]-S[j]))/2;
+        double sigmaij = (S[i]+S[j])*(1-0.2*std::abs(S[i]-S[j]))/2;
         double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
         double rij = sqrt((xij*xij)+(yij*yij));
         if (rij < x*sigmaij && i != j){
