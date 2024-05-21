@@ -13,10 +13,10 @@
 namespace fs = std::experimental::filesystem;
 
 //  Parameters
-const int steps = 2000000; //Monte Carlo steps
+const int steps = 1000000; //Monte Carlo steps
 const int tau = steps; //Observables age
 const int N = 2000; //Number of particles
-const double T = 0.04; //Temperature in units of 1/k_B
+const double T = 0.07; //Temperature in units of 1/k_B
 const double Size = 44.721359550000003; //Size of the system
 
 // const int nn = 55; //Maximum number of nearest neighbours
@@ -363,7 +363,7 @@ void MC(std::string out){
                     FSavg += FS(deg);
                 }
                 log_obs << dataSample[dataCounter] << " " << VTotal()/(2*N) << " " 
-                        << MSD() << FSavg/90 << " " << CB() << std::endl;
+                        << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
                 // saving format: timestep Vtot MSD Fs CB 
                 
             } 
