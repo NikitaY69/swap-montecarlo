@@ -322,7 +322,7 @@ void MC(std::string out){
                 deltaX[i] = bcs(X[i],X0[i]);
                 deltaY[i] = bcs(Y[i],Y0[i]);
                 deltaR2[i] = deltaX[i]*deltaX[i] + deltaY[i]*deltaY[i];
-                R2Max = std::max_element(deltaR2,deltaR2+N)[0];
+            R2Max = std::max_element(deltaR2,deltaR2+N)[0];
             }
             if(R2Max > RUpdate){
                 NL.clear();
