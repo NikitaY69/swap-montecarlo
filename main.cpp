@@ -13,10 +13,11 @@
 namespace fs = std::experimental::filesystem;
 
 //  Parameters
-const int steps = 1000000; //Monte Carlo steps
-const int tau = steps; //Observables age
+const int steps = 10000; //Monte Carlo steps
+const int tau = 2000; // Age of observables
+const int tw = 5000; // Correlation reference time
 const int N = 2000; //Number of particles
-const double T = 0.07; //Temperature in units of 1/k_B
+const double T = 1; //Temperature in units of 1/k_B
 const double Size = 44.721359550000003; //Size of the system
 
 // const int nn = 55; //Maximum number of nearest neighbours
@@ -29,11 +30,8 @@ const double RUpdate = pow(rSkin,2)/4; //When R2Max exceeds this, update NL
 const double x_max = 1.3; // maximal value of r/s for the real neighbours
 
 //  For log plots
-const int dataPoints = 1000;
-const int cycles = steps/tau; 
-const int cyclPoints = dataPoints/cycles;
-double data_exponents = log10(steps)/dataPoints, cycl_exponents = log10(tau)/cyclPoints;
-double dataSample[dataPoints], cyclSample[cyclPoints];
+const int dataPoints = 100;
+double samplePoints[dataPoints];
 
 //  Constants
 const double c0 = -28/pow(1.25,12);
@@ -55,13 +53,13 @@ std::vector< std::vector<int> > NL;
 std::vector< std::vector<int> > nn_0, nn_tw;
 
 //  Write to text file in same folder
-std::ofstream log_obs, log_cfg, log_cycl;
+std::ofstream log_obs, log_cfg;
 std::string motherdir = "/home/allaglo/benchmarks/";
 
 //  Function prototypes
 double bcs(double a, double b);
 int Find(double arr[], int len, double seek);
-void UpdateList();
+void UpdateList(), UpdateAge();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
 std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
@@ -84,26 +82,22 @@ int main(int argc, const char * argv[]) {
     if(!fs::is_directory(out_path)){
         fs::create_directory(outdir);
     }
+
     // Get sample points for log scale
     int index = 0;
+    int tmp;
+    if(tw==0) tmp=steps; else tmp=tau;
+    double exponents = log10(tmp)/dataPoints;
     for (int x = 0; x <= dataPoints; x++){
-        double datav = floor(pow(10,data_exponents*x));
-        if(Find(dataSample, dataPoints, datav) == -1){
-            dataSample[index] = datav;
-            index++;}
+        double value = tw+floor(pow(10,exponents*(x)));
+        if(Find(samplePoints, dataPoints, value) == -1){
+            samplePoints[index] = value;
+            index++;
         // this if condition is actually relevent because of the floor function
-    }
-    if(cycles>1){
-        index = 0;
-        for (int x = 0; x <= cyclPoints; x++){
-        double cyclv = floor(pow(10, cycl_exponents*x));
-        if(Find(cyclSample, dataPoints, cyclv) == -1){
-            cyclSample[index] = cyclv;
-            index++;}
-    }
+        }
     }
     
-    // Read data file
+    // // // Read data file
     std::string line;
     std::ifstream input_file (input);
     if (input_file.is_open()){
@@ -128,17 +122,17 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 
-    // Building list of first neighbours
+    // // Building list of first neighbours
     for (int i=0; i<N; i++){
         nn_0.push_back(nearest_neighbours(i, x_max));
     }
     UpdateList();
 
-    // Do simulation with timer
+    // // Do simulation with timer
     double t0 = time(NULL); // Timer
     MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     // Do MC simulation
-    log_obs.close(), log_cycl.close();
+    log_obs.close();
     //cout.precision(17);
     std::cout << "Done" << std::endl;
     return 0;
@@ -232,14 +226,23 @@ double MSD(){
     return sum/N;
 }
 
+void UpdateAge(){
+    nn_tw.clear();
+    for (int i=0; i<N; i++){
+        nn_tw.push_back(nearest_neighbours(i, x_max));
+        Xtw[i] = Xfull[i];
+        Ytw[i] = Yfull[i];
+    }
+}
+
 //  Calculates the self scattering function
-double FS(double theta){ //, double X_l[N], double Y_l[N]){
+double FS(double theta){
     double dotProduct;
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
     for (int i = 0; i < N; i++){
-        deltaX = Xfull[i]-Xref[i];
-        deltaY = Yfull[i]-Yref[i];
+        deltaX = Xfull[i]-Xtw[i];
+        deltaY = Yfull[i]-Ytw[i];
         dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
         sum += cos(dotProduct);
     }
@@ -247,9 +250,9 @@ double FS(double theta){ //, double X_l[N], double Y_l[N]){
 }
 
 // Computes the bond-breaking correlation function (local)
-double CBLoc(int j){ //, std::vector<std::vector<int>> nn_l){
+double CBLoc(int j){
     std::vector<int> intersect;
-    std::vector<int> nn0 = nn_0[j]; // neighbors at t=0
+    std::vector<int> nn0 = nn_tw[j]; // neighbors at t=0
     std::vector<int> nn = nearest_neighbours(j, x_max);
     std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
                      std::back_inserter(intersect));
@@ -307,16 +310,14 @@ void TrySwap(int j, int k){
 
 // Monte Carlo Simulation
 void MC(std::string out){
-    int dataCounter = 0, cyclCounter = 0, stepCounter = 0;
+    int dataCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
-    log_obs.open(out + "obs.txt"), log_cycl.open(out + "cycles.txt");
+    log_obs.open(out + "obs.txt");
     log_obs << std::scientific << std::setprecision(8);
-    log_cycl << std::scientific << std::setprecision(8);
 
-    for(int x = 0; x < steps; x++){
-        
+    for(int t = 0; t < steps; t++){
         // Updating NL
-        if(x % 150 == 0) {//Change number?
+        if(t % 150 == 0) {//Change number?
             // every 150 steps we check if we need to update the NL
             for (int i = 0; i < N; i++){
                 deltaX[i] = bcs(X[i],X0[i]);
@@ -334,60 +335,43 @@ void MC(std::string out){
                 }
             }
         }
-
-        // Resetting observables after tau steps
-        // if (cycles > 1 && stepCounter % tau == 0){
-        //     cyclCounter = 0;
-        //     nn_tw.clear();
-        //     for (int i=0; i<N; i++){
-        //         nn_tw.push_back(nearest_neighbours(i, x_max));
-        //         Xtw[i] = Xfull[i];
-        //         Ytw[i] = Yfull[i];
-        //     }
-        // }
-
+        if(t==(tw+1)){
+            UpdateAge();
+        }
         // Writing observables to text file
-        if(Find(dataSample, dataPoints, 1.0*x) != -1){ // checking if saving time
-            if(dataSample[dataCounter] != 0){
+        if(Find(samplePoints, dataPoints, 1.0*t) != -1 && t!=0){ 
+            // checking if saving time
+            double FSavg = 0;
+            for(int deg = 0; deg < 90; deg++){
+                FSavg += FS(deg);
+            }
+            if(tw==0){
                 // Configs
-                int idx = int(dataSample[dataCounter]);
+                int idx = int(samplePoints[dataCounter]);
                 log_cfg.open(out + "cfg_" + std::to_string(idx) + ".xy");
                 log_cfg << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
                     log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
                 }
                 log_cfg.close();
-                // Fs
-                double FSavg = 0;
-                for(int deg = 0; deg < 90; deg++){
-                    FSavg += FS(deg);
-                }
-                log_obs << dataSample[dataCounter] << " " << VTotal()/(2*N) << " " 
+                log_obs << samplePoints[dataCounter] << " " << VTotal()/(2*N) << " " 
                         << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
                 // saving format: timestep Vtot MSD Fs CB 
-                
-            } 
+            } else{
+                int idx = t-tw;
+                log_obs << idx << " " << FSavg/90 << " "
+                        << CB() << std::endl;
+                // saving format: timestep Fs CB 
+            }
             dataCounter++;
         }
-        // if(Find(cyclSample, cyclPoints, 1.0*(x%tau)) != -1 && cycles > 1){ // 
-        //     if(cyclSample[cyclCounter] != 0){
-        //         // Fs
-        //         double FSavg = 0;
-        //         for(int deg = 0; deg < 90; deg++){
-        //             FSavg += FS(deg);
-        //         }
-        //         log_cycl << cyclSample[cyclCounter] << " " << FSavg/90 << " " 
-        //                 << CB() << std::endl;
-        //         // saving format: timestep Fs CB
-        //     }
-        //     cyclCounter++;
-        // }
+        
         // Doing the MC
         for (int i = 0; i < N; i++){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
             else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
 
-        stepCounter ++; if(stepCounter%100==0) std:: cout << stepCounter << std::endl; // Counting steps
+        if(t%100==0) std:: cout << t << std::endl; // Counting steps
     }
 }
