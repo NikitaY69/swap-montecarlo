@@ -13,11 +13,10 @@
 namespace fs = std::experimental::filesystem;
 
 //  Parameters
-const int steps = 10000; //Monte Carlo steps
-const int tau = 2000; // Age of observables
-const int tw = 5000; // Correlation reference time
+const int tau = 500000; // Age of observables
+const int steps = 2.5*tau; //Monte Carlo steps
 const int N = 2000; //Number of particles
-const double T = 1; //Temperature in units of 1/k_B
+const double T = 0.07; //Temperature in units of 1/k_B
 const double Size = 44.721359550000003; //Size of the system
 
 // const int nn = 55; //Maximum number of nearest neighbours
@@ -30,7 +29,7 @@ const double RUpdate = pow(rSkin,2)/4; //When R2Max exceeds this, update NL
 const double x_max = 1.3; // maximal value of r/s for the real neighbours
 
 //  For log plots
-const int dataPoints = 100;
+const int dataPoints = 200;
 double samplePoints[dataPoints];
 
 //  Constants
@@ -64,7 +63,7 @@ double PairPotential(double x1, double y1, double s1, double x2, double y2, doub
 double V(double xj, double yj, double rj, int j);
 std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
 double VTotal(), CBLoc(int j), CB(), MSD(), FS(double theta);
-void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
+void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int tw);
 
 //  Random number between 0 and 1
 #define ranf() \
@@ -74,10 +73,12 @@ void TryDisp(int j), TrySwap(int j, int k), MC(std::string out);
 //  main.cpp
 int main(int argc, const char * argv[]) {
     
+    // User-defined variables
     srand(time(NULL)*1.0); //Random number generator
     std::string input = motherdir + argv[1];
     std::string outdir = motherdir + argv[2] + "results/";
-
+    double tw_ = atof(argv[3]);
+    int tw = int(tw_);
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
         fs::create_directory(outdir);
@@ -130,7 +131,7 @@ int main(int argc, const char * argv[]) {
 
     // // Do simulation with timer
     double t0 = time(NULL); // Timer
-    MC(outdir); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
+    MC(outdir, tw); std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     // Do MC simulation
     log_obs.close();
     //cout.precision(17);
@@ -309,15 +310,15 @@ void TrySwap(int j, int k){
 }
 
 // Monte Carlo Simulation
-void MC(std::string out){
+void MC(std::string out, int tw){
     int dataCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     log_obs.open(out + "obs.txt");
     log_obs << std::scientific << std::setprecision(8);
 
-    for(int t = 0; t < steps; t++){
+    for(int t = 1; t <= steps; t++){
         // Updating NL
-        if(t % 150 == 0) {//Change number?
+        if((t-1) % 150 == 0) {//Change number?
             // every 150 steps we check if we need to update the NL
             for (int i = 0; i < N; i++){
                 deltaX[i] = bcs(X[i],X0[i]);
@@ -347,14 +348,13 @@ void MC(std::string out){
             }
             if(tw==0){
                 // Configs
-                int idx = int(samplePoints[dataCounter]);
-                log_cfg.open(out + "cfg_" + std::to_string(idx) + ".xy");
+                log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
                 log_cfg << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
                     log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
                 }
                 log_cfg.close();
-                log_obs << samplePoints[dataCounter] << " " << VTotal()/(2*N) << " " 
+                log_obs << t << " " << VTotal()/(2*N) << " " 
                         << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
                 // saving format: timestep Vtot MSD Fs CB 
             } else{
@@ -372,6 +372,6 @@ void MC(std::string out){
             else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
 
-        if(t%100==0) std:: cout << t << std::endl; // Counting steps
+        if((t-1)%100==0) std:: cout << t << std::endl; // Counting steps
     }
 }
