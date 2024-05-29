@@ -3,20 +3,21 @@
 namespace fs = std::experimental::filesystem;
 
 // Run parameters
-const int tau = 5000;
-const int steps = 2.1*tau;
-const double T = 1; 
+const int tau = 1000000;
+const int tw = 300000;
+const int steps = tw*(cycles-1)+tau;
+const double T = 0.04; 
 std::string motherdir = "/home/allaglo/benchmarks/";
 
 // Snapshots
-const int dataPoints = 500;
+const int dataPoints = 50;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
-double Xfull[N], Yfull[N], Xref[N], Yref[N], Xtw[N], Ytw[N];
-std::vector< std::vector<int> > NL;
-std::vector< std::vector<int> > nn_0, nn_tw;
-
+double Xfull[N], Yfull[N], Xref[N], Yref[N];
+double Xtw[cycles][N], Ytw[cycles][N];
+std::vector < std::vector<int> > NL, nn_0;
+std::vector < std::vector < std::vector <int>>> nn_tw;
 //-----------------------------------------------------------------------------
 //  main.cpp
 int main(int argc, const char * argv[]) {
@@ -25,10 +26,7 @@ int main(int argc, const char * argv[]) {
     srand(time(NULL)*1.0); //Random number generator
     std::string input = motherdir + argv[1];
     std::string outdir = motherdir + argv[2] + "results/";
-    double tw_ = atof(argv[3]);
-    int tw = int(tw_);
 
-    std::cout << "tw = " << tw << std::endl;
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
         // creating outdir if not existing
@@ -68,7 +66,7 @@ int main(int argc, const char * argv[]) {
 
     // // Do simulation with timer
     double t0 = time(NULL); // Timer
-    MC(outdir, tw, dataPoints); 
+    MC(outdir, dataPoints); 
     std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     std::cout << "Done" << std::endl;
     return 0;

@@ -14,8 +14,10 @@
 // Global variables
 //  Run parameters
 extern const int tau; //Correlation max-duration
+const int cycles = 5; //Number of correlation cycles
 extern const int steps; //Monte Carlo sweeps
 extern const double T; //Temperature in units of 1/k_B
+extern const int tw; //Waiting time to start correlation calculations
 
 // Simulation parameters
 const int N = 2000; //Number of particles
@@ -37,7 +39,9 @@ const double pi = 3.14159265358979323846;
 
 // Arrays
 extern double X[N], Y[N], S[N], X0[N], Y0[N];
-extern double Xfull[N], Yfull[N], Xref[N], Yref[N], Xtw[N], Ytw[N];
+extern double Xfull[N], Yfull[N], Xref[N], Yref[N];
+extern double Xtw[cycles][N], Ytw[cycles][N];
+
 // X0 initial position at last neighbour list update
 // Xfull real positions (not taking into account periodic boundaries)
 // Xref positition at t=0
@@ -45,20 +49,20 @@ extern double Xfull[N], Yfull[N], Xref[N], Yref[N], Xtw[N], Ytw[N];
 
 
 //  Neighbour Lists
-extern std::vector< std::vector<int> > NL;
-extern std::vector< std::vector<int> > nn_0, nn_tw;
+extern std::vector < std::vector<int> > NL, nn_0;
+extern std::vector < std::vector < std::vector <int>>> nn_tw;
 // nn_0 nearest neighbours at t=0
 // nn_tw nearest neighbours at last aging update
 
 //  Function prototypes
 double bcs(double a, double b);
-int Find(double arr[], int len, double seek);
-void UpdateList(), UpdateAge();
+int Find(std::vector <double> v, double seek);
+void UpdateList(), UpdateAge(int cycle);
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
 std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
-double VTotal(), CBLoc(int j), CB(), MSD(), FS(double theta);
-void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int tw, int ss);
+double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle, double theta);
+void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);
 
 //  Random number between 0 and 1
 #define ranf() \

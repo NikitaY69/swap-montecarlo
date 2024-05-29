@@ -1,22 +1,35 @@
 #include "swap.h"
 
 // Monte Carlo Simulation
-void MC(std::string out, int tw, int ss){
-    int dataCounter = 0;
+void MC(std::string out, int ss){
+    int dataCounter = 0, cycleCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
 
     // Building snapshots list (log-spaced)
-    double samplePoints[ss];
-    int index = 0, t_max;
-    if(tw==0) t_max=steps; else t_max=tau;
-    double exponents = log10(t_max)/ss;
-    for (int x = 0; x <= ss; x++){
-        double value = tw+floor(pow(10,exponents*(x)));
-        if(Find(samplePoints, ss, value) == -1){
-            samplePoints[index] = value;
-            index++;
-        // this if condition is actually relevent because of the floor function
+    std::vector < std::pair <double, double>> pairs;
+    std::vector <double> samplePoints, twPoints;
+    int t_max;
+    if(cycles==1) t_max=steps; else t_max=tau;
+    double exponents = log10(t_max)/(ss-1);
+
+    for(int c=0; c<cycles; c++){
+        for (int x = 0; x < ss; x++){
+            double value = tw*c + floor(pow(10,exponents*(x)));
+            std::pair <double,double> p = {value, c};
+            int f = std::count(pairs.begin(), pairs.end(), p);
+            // int f = Find(samplePoints, value);
+            // std::count(samplePoints.begin(), samplePoints.end(), value);
+            if(f==0){
+                pairs.emplace_back(value, c);
+            // this if condition is actually relevent because of the floor function
+            }
         }
+    }
+
+    // Sorting
+    std::sort(pairs.begin(), pairs.end());
+    for (auto p: pairs){
+        samplePoints.push_back(p.first); twPoints.push_back(p.second);
     }
 
     // File writing
@@ -45,36 +58,42 @@ void MC(std::string out, int tw, int ss){
                 }
             }
         }
-
+        
         // Updating reference observables
-        if(t==(tw+1)) UpdateAge();
+        if((t-1)%tw == 0 && cycleCounter < cycles){
+            UpdateAge(cycleCounter); cycleCounter++;
+        } 
 
         // Writing observables to text file
-        if(Find(samplePoints, ss, 1.0*t) != -1 && t!=0){ 
+        int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
+        if(f>0){
             // checking if saving time
-            double FSavg = 0;
-            for(int deg = 0; deg < 90; deg++){
-                FSavg += FS(deg);
-            }
-            if(tw==0){
-                // Configs
-                log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-                log_cfg << std::scientific << std::setprecision(8);
-                for (int i = 0; i<N; i++){
-                    log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
+            for(int s=0; s<f; s++){
+                // looping eventual different tws
+                int cycle = twPoints[dataCounter];
+                double FSavg = 0;
+                for(int deg = 0; deg < 90; deg++){
+                    FSavg += FS(cycle, deg);
                 }
-                log_cfg.close();
-                log_obs << t << " " << VTotal()/(2*N) << " " 
-                        << MSD() << " " << FSavg/90 << " " << CB() << std::endl;
-                // saving format: timestep Vtot MSD Fs CB 
-                
-            } else{
-                int idx = t-tw;
-                log_obs << idx << " " << FSavg/90 << " "
-                        << CB() << std::endl;
-                // saving format: timestep Fs CB 
-            }
-            dataCounter++;
+                if(cycles == 1){
+                    // Configs
+                    log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
+                    log_cfg << std::scientific << std::setprecision(8);
+                    for (int i = 0; i<N; i++){
+                        log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
+                    }
+                    log_cfg.close();
+                    log_obs << t << " " << VTotal()/(2*N) << " " 
+                            << MSD() << " " << FSavg/90 << " " << CB(cycle) << std::endl;
+                    // saving format: timestep Vtot MSD Fs CB 
+                    
+                } else{
+                    log_obs << t << " " << cycle << " " << FSavg/90 << " "
+                            << CB(cycle) << std::endl;
+                    // saving format: timestep Fs CB 
+                }
+                dataCounter++;
+            }  
         }
         
         // Doing the MC
@@ -83,9 +102,9 @@ void MC(std::string out, int tw, int ss){
             else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
 
-        if((t-1)%100==0) std:: cout << (t-1) << std::endl; // Counting steps
-    }
-    log_obs.close(); log_cfg.close();
+        if((t-1)%100==0) std::cout << (t-1) << std::endl;; // Counting steps
+    };
+    log_obs.close();
 }
 
 //  Tries displacing one particle j by vector dr = (dx, dy)

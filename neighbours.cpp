@@ -4,9 +4,12 @@
 double bcs(double a, double b) {return Size/2 - std::abs(std::abs(a-b)-Size/2);}
 
 //  Finds index of element in array
-int Find(double arr[], int len, double seek){
-    for (int i = 0; i < len; ++i)
-        if (arr[i] == seek) return i;
+int Find(std::vector <double> v, double seek){
+    int i = 0;
+    for (double v_i: v){
+        if (v_i == seek) return i; 
+        i++;
+    }
     return -1;
 }
 

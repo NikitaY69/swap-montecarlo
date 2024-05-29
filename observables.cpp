@@ -45,13 +45,14 @@ double MSD(){
 // Correlation functions
 
 //  Calculates the self scattering function
-double FS(double theta){
+double FS(int cycle, double theta){
     double dotProduct;
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
+    
     for (int i = 0; i < N; i++){
-        deltaX = Xfull[i]-Xtw[i];
-        deltaY = Yfull[i]-Ytw[i];
+        deltaX = Xfull[i]-Xtw[cycle][i];
+        deltaY = Yfull[i]-Ytw[cycle][i];
         dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
         sum += cos(dotProduct);
     }
@@ -59,9 +60,9 @@ double FS(double theta){
 }
 
 // Computes the bond-breaking correlation function (local)
-double CBLoc(int j){
+double CBLoc(int cycle, int j){
     std::vector<int> intersect;
-    std::vector<int> nn0 = nn_tw[j]; // neighbors at t=0
+    std::vector<int> nn0 = nn_tw[cycle][j]; // neighbors at t=0
     std::vector<int> nn = nearest_neighbours(j, x_max);
     std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
                      std::back_inserter(intersect));
@@ -75,19 +76,19 @@ double CBLoc(int j){
 }
 
 // Computes the bond-breaking correlation function (averaged)
-double CB(){
+double CB(int cycle){
     double tot = 0;
     for (int j=0; j<N; j++){
-        tot += CBLoc(j);
+        tot += CBLoc(cycle, j);
     } return tot/N;
 }
 
 // Updates the reference points for the correlation functions
-void UpdateAge(){
-    nn_tw.clear();
+void UpdateAge(int cycle){
+    nn_tw.push_back(std::vector < std::vector <int>>());
     for (int i=0; i<N; i++){
-        nn_tw.push_back(nearest_neighbours(i, x_max));
-        Xtw[i] = Xfull[i];
-        Ytw[i] = Yfull[i];
+        nn_tw[cycle].push_back(nearest_neighbours(i, x_max));
+        Xtw[cycle][i] = Xfull[i];
+        Ytw[cycle][i] = Yfull[i];
     }
 }
