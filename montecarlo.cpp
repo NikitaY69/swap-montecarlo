@@ -111,17 +111,19 @@ void MC(std::string out, int ss){
 void TryDisp(int j){
     double dx = (ranf()-0.5)*deltaMax;
     double dy = (ranf()-0.5)*deltaMax;
-    double deltaE = V(X[j] + dx, Y[j] + dy, S[j], j) - V(X[j], Y[j], S[j], j);
+    double Xnew = fmod((X[j]+dx),Size/2);
+    double Ynew = fmod((Y[j]+dx),Size/2);
+    double deltaE = V(Xnew, Ynew, S[j], j) - V(X[j], Y[j], S[j], j);
     // why is the modulus function not in deltaE ?
     if (deltaE < 0){
-        X[j] = fmod((X[j]+dx),Size); //Check modulus function
-        Y[j] = fmod((Y[j]+dy),Size);
+        X[j] = Xnew; //Check modulus function
+        Y[j] = Ynew;
         Xfull[j] = Xfull[j]+dx;
         Yfull[j] = Yfull[j]+dy;
     }
     else if (exp(-deltaE/T) > ranf()){
-        X[j] = fmod((X[j]+dx),Size);
-        Y[j] = fmod((Y[j]+dy),Size);
+        X[j] = Xnew;
+        Y[j] = Ynew;
         Xfull[j] = Xfull[j]+dx;
         Yfull[j] = Yfull[j]+dy;
     }
