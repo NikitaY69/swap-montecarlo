@@ -39,6 +39,19 @@ std::vector<int> nearest_neighbours(int j, double x){
     } return nn;
 }
 
+// Computes the effective neighbours of particle j
+std::vector<int> radius_neighbours(int j, double r){
+    std::vector<int> neigh;
+    for (int i=0; i<N; i++){
+        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+        double rij2 = std::sqrt((xij*xij)+(yij*yij));
+        if (rij2 < r && i != j){
+            neigh.push_back(i);
+        }
+    }
+    return neigh;
+}
+
 //  Creates the neighbour list for the set of particles
 void UpdateList(){
     for (int i = 0; i < N; i++){

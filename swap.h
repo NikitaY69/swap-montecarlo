@@ -14,7 +14,7 @@
 // Global variables
 //  Run parameters
 extern const int tau; //Correlation max-duration
-const int cycles = 5; //Number of correlation cycles
+const int cycles = 1; //Number of correlation cycles
 extern const int steps; //Monte Carlo sweeps
 extern const double T; //Temperature in units of 1/k_B
 extern const int tw; //Waiting time to start correlation calculations
@@ -60,8 +60,10 @@ int Find(std::vector <double> v, double seek);
 void UpdateList(), UpdateAge(int cycle);
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j);
-std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
-double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle, double theta);
+std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x),
+radius_neighbours(int j, double r);
+double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle, double theta),
+DispCorrLoc(int j), DispCorr(), MicroDispCorrLoc(int j, double r), MicroDispCorr(double r);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);
 
 //  Random number between 0 and 1

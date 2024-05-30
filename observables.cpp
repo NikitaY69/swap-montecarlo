@@ -83,6 +83,44 @@ double CB(int cycle){
     } return tot/N;
 }
 
+// Computes the averaged scalar product over all pair of particles
+double DispCorrLoc(int j){
+    double sum = 0;
+    double deltaXi, deltaYi, deltaXj, deltaYj;
+    deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
+    for (int i=0; i<N; i++){
+        if (i!=j){
+            deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
+            sum += deltaXi*deltaXj + deltaYi*deltaYj;
+        }
+    }
+}
+
+double DispCorr(){
+    double sum = 0;
+    for (int i=0;i<N;i++){
+        sum += DispCorrLoc(i);
+    } return sum/(2*N);
+}
+
+double MicroDispCorrLoc(int j, double r){
+    double sum = 0;
+    double deltaXi, deltaYi, deltaXj, deltaYj;
+    deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
+    std::vector <int> nn_r = radius_neighbours(j, r);
+    for (int i: nn_r){
+        deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
+        sum += deltaXi*deltaXj + deltaYi*deltaYj;
+    }
+}
+
+double MicroDispCorr(double r){
+    double sum = 0;
+    for (int i=0;i<N;i++){
+        sum += MicroDispCorrLoc(i, r);
+    } return sum/(2*N);
+}
+
 // Updates the reference points for the correlation functions
 void UpdateAge(int cycle){
     nn_tw.push_back(std::vector < std::vector <int>>());

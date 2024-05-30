@@ -4,10 +4,10 @@ namespace fs = std::experimental::filesystem;
 
 // Run parameters
 const int tau = 1000000;
-const int tw = 300000;
+const int tw = 1;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.04; 
-std::string motherdir = "/home/allaglo/benchmarks/";
+const double T = 0.07; 
+std::string motherdir = "/home/allaglo/collective_corr/";
 
 // Snapshots
 const int dataPoints = 50;
