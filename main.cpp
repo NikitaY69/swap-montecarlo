@@ -3,10 +3,11 @@
 namespace fs = std::experimental::filesystem;
 
 // Run parameters
-const int tau = 1000000;
-const int tw = 300000;
+const int tau = 500000;
+const int tw = 100000;
+const int cycles = 5;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.04; 
+const double T = 0.1; 
 std::string motherdir = "/home/allaglo/benchmarks/";
 
 // Snapshots
@@ -15,7 +16,7 @@ const int dataPoints = 50;
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
 double Xfull[N], Yfull[N], Xref[N], Yref[N];
-double Xtw[cycles][N], Ytw[cycles][N];
+std::vector < std::array <double, N>> Xtw, Ytw;
 std::vector < std::vector<int> > NL, nn_0;
 std::vector < std::vector < std::vector <int>>> nn_tw;
 //-----------------------------------------------------------------------------

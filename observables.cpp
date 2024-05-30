@@ -86,6 +86,7 @@ double CB(int cycle){
 // Updates the reference points for the correlation functions
 void UpdateAge(int cycle){
     nn_tw.push_back(std::vector < std::vector <int>>());
+    Xtw.push_back(std::array <double, N>());
     for (int i=0; i<N; i++){
         nn_tw[cycle].push_back(nearest_neighbours(i, x_max));
         Xtw[cycle][i] = Xfull[i];

@@ -14,7 +14,7 @@
 // Global variables
 //  Run parameters
 extern const int tau; //Correlation max-duration
-const int cycles = 5; //Number of correlation cycles
+extern const int cycles; //Number of correlation cycles
 extern const int steps; //Monte Carlo sweeps
 extern const double T; //Temperature in units of 1/k_B
 extern const int tw; //Waiting time to start correlation calculations
@@ -40,7 +40,7 @@ const double pi = 3.14159265358979323846;
 // Arrays
 extern double X[N], Y[N], S[N], X0[N], Y0[N];
 extern double Xfull[N], Yfull[N], Xref[N], Yref[N];
-extern double Xtw[cycles][N], Ytw[cycles][N];
+extern std::vector < std::array <double, N>> Xtw, Ytw;
 
 // X0 initial position at last neighbour list update
 // Xfull real positions (not taking into account periodic boundaries)
