@@ -93,19 +93,19 @@ void MC(std::string out, int ss){
                 } else{
                     log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " 
                     << FSavg/90 << " " << CB(cycle) << std::endl;
-                    if (std::count(endingPoints, endingPoints+cycles, 1.0*t) > 0){
-                        log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-                        log_cfg << std::scientific << std::setprecision(8);
-                        for (int i = 0; i<N; i++){
-                            log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
-                        }
-                    }
-                    // saving format: timestep Fs CB 
+                    // saving format: timestep Vtot Fs CB 
                 }
                 dataCounter++;
             }  
         }
-        
+        if (cycles > 1 && std::count(endingPoints, endingPoints+cycles, 1.0*t) > 0){
+            log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
+            log_cfg << std::scientific << std::setprecision(8);
+            for (int i = 0; i<N; i++){
+                log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
+            }
+            log_cfg.close();
+        }
         // Doing the MC
         for (int i = 0; i < N; i++){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
