@@ -8,9 +8,8 @@ void MC(std::string out, int ss){
     // Building snapshots list (log-spaced)
     std::vector < std::pair <double, double>> pairs;
     std::vector <double> samplePoints, twPoints;
-    int t_max;
-    if(cycles==1) t_max=steps; else t_max=tau;
-    double exponents = log10(t_max)/(ss-1);
+    double endingPoints[cycles];
+    double exponents = log10(steps)/(ss-1);
 
     for(int c=0; c<cycles; c++){
         for (int x = 0; x < ss; x++){
@@ -32,6 +31,10 @@ void MC(std::string out, int ss){
         samplePoints.push_back(p.first); twPoints.push_back(p.second);
     }
 
+    // Ending points
+    for(int c=0;c<cycles;c++){
+        endingPoints[c] = c*tw + tau;
+    }
     // File writing
     std::ofstream log_obs, log_cfg;
     log_obs.open(out + "obs.txt");
@@ -88,8 +91,15 @@ void MC(std::string out, int ss){
                     // saving format: timestep Vtot MSD Fs CB 
                     
                 } else{
-                    log_obs << t << " " << cycle << " " << FSavg/90 << " "
-                            << CB(cycle) << std::endl;
+                    log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " 
+                    << FSavg/90 << " " << CB(cycle) << std::endl;
+                    if (std::count(endingPoints, endingPoints+cycles, 1.0*t) > 0){
+                        log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
+                        log_cfg << std::scientific << std::setprecision(8);
+                        for (int i = 0; i<N; i++){
+                            log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
+                        }
+                    }
                     // saving format: timestep Fs CB 
                 }
                 dataCounter++;
@@ -111,11 +121,12 @@ void MC(std::string out, int ss){
 void TryDisp(int j){
     double dx = (ranf()-0.5)*deltaMax;
     double dy = (ranf()-0.5)*deltaMax;
-    double Xnew = fmod((X[j]+dx),Size/2);
-    double Ynew = fmod((Y[j]+dx),Size/2);
+    double Xnew = Pshift(X[j]+dx);
+    double Ynew = Pshift(Y[j]+dy);
     double deltaE = V(Xnew, Ynew, S[j], j) - V(X[j], Y[j], S[j], j);
     // why is the modulus function not in deltaE ?
     if (deltaE < 0){
+        // Xnew = fmod(X[j],Size);
         X[j] = Xnew; //Check modulus function
         Y[j] = Ynew;
         Xfull[j] = Xfull[j]+dx;

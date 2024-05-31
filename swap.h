@@ -59,7 +59,7 @@ double bcs(double a, double b);
 int Find(std::vector <double> v, double seek);
 void UpdateList(), UpdateAge(int cycle);
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
-double V(double xj, double yj, double rj, int j);
+double V(double xj, double yj, double rj, int j), Pshift(double a);
 std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x);
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle, double theta);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);

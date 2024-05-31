@@ -3,14 +3,8 @@
 //  Calculates difference of a and b while applying periodic boundary conditions
 double bcs(double a, double b) {return Size/2 - std::abs(std::abs(a-b)-Size/2);}
 
-//  Finds index of element in array
-int Find(std::vector <double> v, double seek){
-    int i = 0;
-    for (double v_i: v){
-        if (v_i == seek) return i; 
-        i++;
-    }
-    return -1;
+double Pshift(double a){
+    return a - Size*floor((a+Size/2)/Size);
 }
 
 // Computes the effective neighbours of particle j
