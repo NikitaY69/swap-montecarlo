@@ -83,7 +83,7 @@ void MC(std::string out, int ss){
                     log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
                     log_cfg << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
-                        log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
+                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
                     }
                     log_cfg.close();
                     log_obs << t << " " << VTotal()/(2*N) << " " 
@@ -102,7 +102,7 @@ void MC(std::string out, int ss){
             log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
             log_cfg << std::scientific << std::setprecision(8);
             for (int i = 0; i<N; i++){
-                log_cfg << S[i] << " " << X[i] << " " << Y[i] << std::endl;
+                log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
             }
             log_cfg.close();
         }
