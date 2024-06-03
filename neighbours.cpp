@@ -7,7 +7,7 @@ double Pshift(double a){
     return a - Size*floor((a+Size/2)/Size);
 }
 
-// Computes the effective neighbours of particle j
+// Computes the pseudo-interacting neighbours list
 void UpdateNL(){
     NL.clear(); NL = std::vector < std::vector <int> > (N);
     for (int j=0; j<N-1; j++){
@@ -22,22 +22,18 @@ void UpdateNL(){
     }
 }
 
-// Computes the nearest neighbours of particle j at a given radius
-std::vector<int> nearest_neighbours(int j, double x){
-    std::vector<int> nn;
-    for (int i=0; i<N; i++){
-        double sigmaij = (S[i]+S[j])*(1-0.2*std::abs(S[i]-S[j]))/2;
-        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
-        double rij = sqrt((xij*xij)+(yij*yij));
-        if (rij < x*sigmaij && i != j){
-            nn.push_back(i);
-        }
-    } return nn;
+// Computes the nearest neighbours list
+void UpdateNN(){
+    NN.clear(); NN = std::vector < std::vector <int> > (N);
+    for (int j=0; j<N-1; j++){
+        for (int i=j+1; i<N; i++){
+            double sigmaij = (S[i]+S[j])*(1-0.2*std::abs(S[i]-S[j]))/2;
+            double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+            double rij = sqrt((xij*xij)+(yij*yij));
+            if (rij < x_max*sigmaij && i != j){
+                NN[j].push_back(i);
+                NN[i].push_back(j);
+            }
+        } 
+    }
 }
-
-//  Creates the neighbour list for the set of particles
-// void UpdateList(){
-//     for (int i = 0; i < N; i++){
-//         NL.push_back(effective_neighbours(i));
-//     }
-// }

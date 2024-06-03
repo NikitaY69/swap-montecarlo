@@ -49,18 +49,17 @@ extern std::vector < std::array <double, N>> Xtw, Ytw;
 
 
 //  Neighbour Lists
-extern std::vector < std::vector<int> > NL, nn_0;
-extern std::vector < std::vector < std::vector <int>>> nn_tw;
+extern std::vector < std::vector<int> > NL, NN;
+extern std::vector < std::vector < std::vector <int>>> NN_tw;
 // nn_0 nearest neighbours at t=0
 // nn_tw nearest neighbours at last aging update
 
 //  Function prototypes
 double bcs(double a, double b);
-void UpdateAge(int cycle), UpdateNL();
+void UpdateAge(int cycle), UpdateNL(), UpdateNN();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
 double V(double xj, double yj, double rj, int j), Pshift(double a);
-std::vector<int> nearest_neighbours(int j, double x);
-double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle, double theta);
+double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);
 
 //  Random number between 0 and 1

@@ -17,8 +17,8 @@ const int dataPoints = 30;
 double X[N], Y[N], S[N], X0[N], Y0[N];
 double Xfull[N], Yfull[N], Xref[N], Yref[N];
 std::vector < std::array <double, N>> Xtw, Ytw;
-std::vector < std::vector<int> > NL(N), nn_0(N);
-std::vector < std::vector < std::vector <int>>> nn_tw(N);
+std::vector < std::vector<int> > NL(N), NN(N);
+std::vector < std::vector < std::vector <int>>> NN_tw;
 //-----------------------------------------------------------------------------
 //  main.cpp
 int main(int argc, const char * argv[]) {
@@ -26,7 +26,7 @@ int main(int argc, const char * argv[]) {
     // User-defined variables
     srand(9149123); //Random number generator
     std::string input = motherdir + argv[1];
-    std::string outdir = motherdir + argv[2] + "results/";
+    std::string outdir = motherdir + argv[2] + "results_corr/";
 
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
@@ -58,12 +58,6 @@ int main(int argc, const char * argv[]) {
         std::cout << input << std::endl;
         return 0;
     }
-
-    // // Building list of first neighbours
-    for (int i=0; i<N; i++){
-        nn_0.push_back(nearest_neighbours(i, x_max));
-    }
-    UpdateNL();
 
     // // Do simulation with timer
     double t0 = time(NULL); // Timer

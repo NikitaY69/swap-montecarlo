@@ -45,25 +45,27 @@ double MSD(){
 // Correlation functions
 
 //  Calculates the self scattering function
-double FS(int cycle, double theta){
+double FS(int cycle){
     double dotProduct;
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
-    
+    int ang = 90;
     for (int i = 0; i < N; i++){
-        deltaX = Xfull[i]-Xtw[cycle][i];
-        deltaY = Yfull[i]-Ytw[cycle][i];
-        dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
-        sum += cos(dotProduct);
+        for (int theta=0; theta<ang; theta++){
+            deltaX = Xfull[i]-Xtw[cycle][i];
+            deltaY = Yfull[i]-Ytw[cycle][i];
+            dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
+            sum += cos(dotProduct);
+        }
     }
-    return sum/N;
+    return sum/(ang*N);
 }
 
 // Computes the bond-breaking correlation function (local)
 double CBLoc(int cycle, int j){
     std::vector<int> intersect;
-    std::vector<int> nn0 = nn_tw[cycle][j]; // neighbors at t=0
-    std::vector<int> nn = nearest_neighbours(j, x_max);
+    std::vector<int> nn0 = NN_tw[cycle][j]; // neighbors at t=0
+    std::vector<int> nn = NN[j];
     std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
                      std::back_inserter(intersect));
 
@@ -85,11 +87,10 @@ double CB(int cycle){
 
 // Updates the reference points for the correlation functions
 void UpdateAge(int cycle){
-    nn_tw.push_back(std::vector < std::vector <int>>());
+    UpdateNN(); NN_tw.push_back(NN);
     Xtw.push_back(std::array <double, N>());
     Ytw.push_back(std::array <double, N>());
     for (int i=0; i<N; i++){
-        nn_tw[cycle].push_back(nearest_neighbours(i, x_max));
         Xtw[cycle][i] = Xfull[i];
         Ytw[cycle][i] = Yfull[i];
     }
