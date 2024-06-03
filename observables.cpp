@@ -50,8 +50,8 @@ double FS(int cycle){
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
     int ang = 90;
-    for (int i = 0; i < N; i++){
-        for (int theta=0; theta<ang; theta++){
+    for (int theta=0; theta<ang; theta++){
+        for (int i = 0; i < N; i++){
             deltaX = Xfull[i]-Xtw[cycle][i];
             deltaY = Yfull[i]-Ytw[cycle][i];
             dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
