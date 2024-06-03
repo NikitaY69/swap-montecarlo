@@ -50,6 +50,7 @@ double FS(int cycle){
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
     int ang = 90;
+    
     for (int theta=0; theta<ang; theta++){
         for (int i = 0; i < N; i++){
             deltaX = Xfull[i]-Xtw[cycle][i];

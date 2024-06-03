@@ -16,8 +16,6 @@ void MC(std::string out, int ss){
             double value = tw*c + floor(pow(10,exponents*(x)));
             std::pair <double,double> p = {value, c};
             int f = std::count(pairs.begin(), pairs.end(), p);
-            // int f = Find(samplePoints, value);
-            // std::count(samplePoints.begin(), samplePoints.end(), value);
             if(f==0){
                 pairs.emplace_back(value, c);
             // this if condition is actually relevent because of the floor function
@@ -75,13 +73,14 @@ void MC(std::string out, int ss){
                 int cycle = twPoints[dataCounter];
                 if(cycles == 1){
                     // Configs
-                    // log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-                    // log_cfg << std::scientific << std::setprecision(8);
-                    // for (int i = 0; i<N; i++){
-                    //     log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
-                    // }
-                    // log_cfg.close();
-                    log_obs << t << " " << FS(cycle) << " " << CB(cycle) << std::endl;
+                    log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
+                    log_cfg << std::scientific << std::setprecision(8);
+                    for (int i = 0; i<N; i++){
+                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
+                    }
+                    log_cfg.close();
+                    log_obs << t << " " << VTotal()/(2*N) << " " << MSD() << " " 
+                            << FS(cycle) << " " << CB(cycle) << std::endl;
                     // saving format: timestep Vtot MSD Fs CB 
                     
                 } else{

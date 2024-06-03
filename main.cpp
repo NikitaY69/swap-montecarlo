@@ -3,7 +3,7 @@
 namespace fs = std::experimental::filesystem;
 
 // Run parameters
-const int tau = 50000;
+const int tau = 100000;
 const int tw = 50000;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
@@ -24,9 +24,9 @@ std::vector < std::vector < std::vector <int>>> NN_tw;
 int main(int argc, const char * argv[]) {
     
     // User-defined variables
-    srand(9149123); //Random number generator
+    srand(time(NULL)*1.0); //Random number generator
     std::string input = motherdir + argv[1];
-    std::string outdir = motherdir + argv[2] + "results_corr/";
+    std::string outdir = motherdir + argv[2] + "results/";
 
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
@@ -59,7 +59,8 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 
-    UpdateNL();
+    UpdateNL(); // First list of neighbours
+
     // // Do simulation with timer
     double t0 = time(NULL); // Timer
     MC(outdir, dataPoints); 
