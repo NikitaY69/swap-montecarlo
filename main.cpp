@@ -3,9 +3,9 @@
 namespace fs = std::experimental::filesystem;
 
 // Run parameters
-const int tau = 100000;
+const int tau = 50000;
 const int tw = 50000;
-const int cycles = 10;
+const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
 const double T = 0.1; 
 std::string motherdir = "/home/allaglo/benchmarks/";
@@ -17,14 +17,14 @@ const int dataPoints = 30;
 double X[N], Y[N], S[N], X0[N], Y0[N];
 double Xfull[N], Yfull[N], Xref[N], Yref[N];
 std::vector < std::array <double, N>> Xtw, Ytw;
-std::vector < std::vector<int> > NL, nn_0;
-std::vector < std::vector < std::vector <int>>> nn_tw;
+std::vector < std::vector<int> > NL(N), nn_0(N);
+std::vector < std::vector < std::vector <int>>> nn_tw(N);
 //-----------------------------------------------------------------------------
 //  main.cpp
 int main(int argc, const char * argv[]) {
     
     // User-defined variables
-    srand(time(NULL)*1.0); //Random number generator
+    srand(9149123); //Random number generator
     std::string input = motherdir + argv[1];
     std::string outdir = motherdir + argv[2] + "results/";
 
@@ -63,7 +63,7 @@ int main(int argc, const char * argv[]) {
     for (int i=0; i<N; i++){
         nn_0.push_back(nearest_neighbours(i, x_max));
     }
-    UpdateList();
+    UpdateNL();
 
     // // Do simulation with timer
     double t0 = time(NULL); // Timer
