@@ -59,6 +59,7 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 
+    UpdateNL();
     // // Do simulation with timer
     double t0 = time(NULL); // Timer
     MC(outdir, dataPoints); 

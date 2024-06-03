@@ -60,7 +60,7 @@ void MC(std::string out, int ss){
                 }
             }
         }
-        
+    
         // Updating reference observables
         if((t-1)%tw == 0 && cycleCounter < cycles){
             UpdateAge(cycleCounter); cycleCounter++;
