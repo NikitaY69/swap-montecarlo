@@ -3,15 +3,15 @@
 namespace fs = std::experimental::filesystem;
 
 // Run parameters
-const int tau = 100000;
-const int tw = 50000;
-const int cycles = 1;
+const int tau = 5000000;
+const int tw = 800000;
+const int cycles = 10;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.1; 
+const double T = 0.04; 
 std::string motherdir = "/home/allaglo/benchmarks/";
 
 // Snapshots
-const int dataPoints = 30;
+const int dataPoints = 50;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
