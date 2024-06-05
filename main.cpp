@@ -3,10 +3,13 @@
 namespace fs = std::experimental::filesystem;
 
 // Run parameters
-const int tau = 1000000;
+const int tau = 5000000;
 const int tw = 1;
+const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.07; 
+const double T = 0.04; 
+const int nr = 20;
+
 std::string motherdir = "/home/allaglo/collective_corr/";
 
 // Snapshots
@@ -15,9 +18,10 @@ const int dataPoints = 50;
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
 double Xfull[N], Yfull[N], Xref[N], Yref[N];
-double Xtw[cycles][N], Ytw[cycles][N];
-std::vector < std::vector<int> > NL, nn_0;
-std::vector < std::vector < std::vector <int>>> nn_tw;
+std::vector < std::array <double, N>> Xtw, Ytw;
+std::vector < std::vector<int> > NL(N), NN(N);
+std::vector < std::vector < std::vector <int>>> NN_tw;
+std::vector < std::vector < std::vector <int>>> RL(N, std::vector < std::vector <int>>(nr));
 //-----------------------------------------------------------------------------
 //  main.cpp
 int main(int argc, const char * argv[]) {
@@ -47,7 +51,7 @@ int main(int argc, const char * argv[]) {
             while (ss >> value){
                 cfg[i].push_back(value);
             }
-            S[i] = cfg[i][0]; X[i] = cfg[i][1]; Y[i] = cfg[i][2];
+            S[i] = cfg[i][0]; X[i] = Pshift(cfg[i][1]); Y[i] = Pshift(cfg[i][2]);
             X0[i] = X[i]; Xfull[i] = X[i]; Xref[i] = X[i];
             Y0[i] = Y[i]; Yfull[i] = Y[i]; Yref[i] = Y[i];
             i++;}
@@ -58,11 +62,7 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 
-    // // Building list of first neighbours
-    for (int i=0; i<N; i++){
-        nn_0.push_back(nearest_neighbours(i, x_max));
-    }
-    UpdateList();
+    UpdateNL(); // First list of neighbours
 
     // // Do simulation with timer
     double t0 = time(NULL); // Timer

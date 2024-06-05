@@ -1,24 +1,22 @@
 #include "swap.h"
 
+double dXCM, dYCM;
+
 // Monte Carlo Simulation
 void MC(std::string out, int ss){
     int dataCounter = 0, cycleCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
-    double r_step = Size/50;
     // Building snapshots list (log-spaced)
     std::vector < std::pair <double, double>> pairs;
     std::vector <double> samplePoints, twPoints;
-    int t_max;
-    if(cycles==1) t_max=steps; else t_max=tau;
-    double exponents = log10(t_max)/(ss-1);
+    double endingPoints[cycles], linPoints[ss];
+    double exponents = log10(tau)/(ss-1);
 
     for(int c=0; c<cycles; c++){
         for (int x = 0; x < ss; x++){
             double value = tw*c + floor(pow(10,exponents*(x)));
             std::pair <double,double> p = {value, c};
             int f = std::count(pairs.begin(), pairs.end(), p);
-            // int f = Find(samplePoints, value);
-            // std::count(samplePoints.begin(), samplePoints.end(), value);
             if(f==0){
                 pairs.emplace_back(value, c);
             // this if condition is actually relevent because of the floor function
@@ -32,6 +30,14 @@ void MC(std::string out, int ss){
         samplePoints.push_back(p.first); twPoints.push_back(p.second);
     }
 
+    // Ending points
+    for(int c=0;c<cycles;c++){
+        endingPoints[c] = c*tw + tau;
+    }
+    // Linspaced points
+    for (int k=1;k<=ss;k++){
+        linPoints[k] = (tau/(ss))*k;
+    }
     // File writing
     std::ofstream log_obs, log_cfg, log_ploc, log_p;
     log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
@@ -49,8 +55,7 @@ void MC(std::string out, int ss){
             R2Max = std::max_element(deltaR2,deltaR2+N)[0];
             }
             if(R2Max > RUpdate){
-                NL.clear();
-                UpdateList();
+                UpdateNL();
                 R2Max = 0;
                 for(int j = 0; j < N; j++){
                     X0[j] = X[j];
@@ -58,18 +63,24 @@ void MC(std::string out, int ss){
                 }
             }
         }
-        
+    
         // Updating reference observables
-        if((t-1)%tw == 0 && cycleCounter < cycles){
-            UpdateAge(cycleCounter); cycleCounter++;
-        } 
+        // if((t-1)%tw == 0 && cycleCounter < cycles){
+        //     UpdateAge(cycleCounter); cycleCounter++;
+        // } 
 
         // Writing observables to text file
-        int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
-        if(f>0){
-            // checking if saving time
+        int f = std::count(linPoints, linPoints+ss, 1.0*t);
+        // int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
+        if(f>0){ // checking if saving time
+            UpdateNN(); UpdateRL(); // updating nearest neighbours
+            dXCM = 0; dYCM = 0;
+            for (int i=0;i<N;i++){
+                double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
+                dXCM += deltaX; dYCM += deltaY;
+            } dXCM /= N; dYCM /= N;
             for(int s=0; s<f; s++){
-                // looping eventual different tws
+                // looping different eventual tws
                 int cycle = twPoints[dataCounter];
                 // double FSavg = 0;
                 // for(int deg = 0; deg < 90; deg++){
@@ -78,20 +89,21 @@ void MC(std::string out, int ss){
                 if(cycles == 1){
                     // Configs
                     log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-                    log_ploc.open(out + "products_loc_" + std::to_string(t) + ".txt");
+                    // log_ploc.open(out + "products_loc_" + std::to_string(t) + ".txt");
                     log_cfg << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
-                        log_cfg << S[i] << " " << Xfull[i]-Xref[i] << " " << Yfull[i]-Yref[i] << " " <<
+                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " " <<
                         DispCorrLoc(i) << std::endl;
-                        for (int k=1;k<=50;k++){
-                            log_ploc << MicroDispCorrLoc(i, k*r_step) << " ";
-                        } log_ploc << std::endl;
+                        // for (int k=1;k<=50;k++){
+                        //     log_ploc << MicroDispCorrLoc(i, k*r_step) << " ";
+                        // } log_ploc << std::endl;
                     }
-                    log_cfg.close(), log_ploc.close();
+                    log_cfg.close(); //, log_ploc.close();
                     log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
                     log_p << t << " ";
-                    for (int k=1;k<=50;k++){
-                            log_p << MicroDispCorr(k*r_step) << " ";
+                    std::vector <double> disp = MicroDispCorr();
+                    for (int k=0;k<nr;k++){
+                            log_p << disp[k] << " ";
                         } log_p << std::endl;
                     // saving format: timestep Vtot MSD Fs CB 
                     
@@ -103,7 +115,14 @@ void MC(std::string out, int ss){
                 dataCounter++;
             }  
         }
-        
+        if (cycles > 1 && std::count(endingPoints, endingPoints+cycles, 1.0*t) > 0){
+            log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
+            log_cfg << std::scientific << std::setprecision(8);
+            for (int i = 0; i<N; i++){
+                log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
+            }
+            log_cfg.close();
+        }
         // Doing the MC
         for (int i = 0; i < N; i++){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
@@ -119,17 +138,20 @@ void MC(std::string out, int ss){
 void TryDisp(int j){
     double dx = (ranf()-0.5)*deltaMax;
     double dy = (ranf()-0.5)*deltaMax;
-    double deltaE = V(X[j] + dx, Y[j] + dy, S[j], j) - V(X[j], Y[j], S[j], j);
+    double Xnew = Pshift(X[j]+dx);
+    double Ynew = Pshift(Y[j]+dy);
+    double deltaE = V(Xnew, Ynew, S[j], j) - V(X[j], Y[j], S[j], j);
     // why is the modulus function not in deltaE ?
     if (deltaE < 0){
-        X[j] = fmod((X[j]+dx),Size); //Check modulus function
-        Y[j] = fmod((Y[j]+dy),Size);
+        // Xnew = fmod(X[j],Size);
+        X[j] = Xnew; //Check modulus function
+        Y[j] = Ynew;
         Xfull[j] = Xfull[j]+dx;
         Yfull[j] = Yfull[j]+dy;
     }
     else if (exp(-deltaE/T) > ranf()){
-        X[j] = fmod((X[j]+dx),Size);
-        Y[j] = fmod((Y[j]+dy),Size);
+        X[j] = Xnew;
+        Y[j] = Ynew;
         Xfull[j] = Xfull[j]+dx;
         Yfull[j] = Yfull[j]+dy;
     }

@@ -1,60 +1,58 @@
 #include "swap.h"
+double r_step = 35/(nr-1);
 
 //  Calculates difference of a and b while applying periodic boundary conditions
 double bcs(double a, double b) {return Size/2 - std::abs(std::abs(a-b)-Size/2);}
 
-//  Finds index of element in array
-int Find(std::vector <double> v, double seek){
-    int i = 0;
-    for (double v_i: v){
-        if (v_i == seek) return i; 
-        i++;
-    }
-    return -1;
+double Pshift(double a){
+    return a - Size*floor((a+Size/2)/Size);
 }
 
-// Computes the effective neighbours of particle j
-std::vector<int> effective_neighbours(int j){
-    std::vector<int> neigh;
-    for (int i=0; i<N; i++){
-        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
-        double rij2 = (xij*xij)+(yij*yij);
-        if (rij2 < rNL && i != j){
-            neigh.push_back(i);
+// Computes the pseudo-interacting neighbours list
+void UpdateNL(){
+    NL.clear(); NL = std::vector < std::vector <int> > (N);
+    for (int j=0; j<N-1; j++){
+        for (int i=j+1; i<N; i++){
+            double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+            double rij2 = (xij*xij)+(yij*yij);
+            if (rij2 < rNL && i != j){
+                NL[j].push_back(i);
+                NL[i].push_back(j);
+            }
         }
     }
-    return neigh;
 }
 
-// Computes the nearest neighbours of particle j at a given radius
-std::vector<int> nearest_neighbours(int j, double x){
-    std::vector<int> nn;
-    for (int i=0; i<N; i++){
-        double sigmaij = (S[i]+S[j])*(1-0.2*std::abs(S[i]-S[j]))/2;
-        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
-        double rij = sqrt((xij*xij)+(yij*yij));
-        if (rij < x*sigmaij && i != j){
-            nn.push_back(i);
-        }
-    } return nn;
-}
-
-// Computes the effective neighbours of particle j
-std::vector<int> radius_neighbours(int j, double r){
-    std::vector<int> neigh;
-    for (int i=0; i<N; i++){
-        double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
-        double rij2 = std::sqrt((xij*xij)+(yij*yij));
-        if (rij2 < r && i != j){
-            neigh.push_back(i);
-        }
+// Computes the nearest neighbours list
+void UpdateNN(){
+    NN.clear(); NN = std::vector < std::vector <int> > (N);
+    for (int j=0; j<N-1; j++){
+        for (int i=j+1; i<N; i++){
+            double sigmaij = (S[i]+S[j])*(1-0.2*std::abs(S[i]-S[j]))/2;
+            double xij = bcs(X[i], X[j]); double yij = bcs(Y[i], Y[j]);
+            double rij = sqrt((xij*xij)+(yij*yij));
+            if (rij < x_max*sigmaij && i != j){
+                NN[j].push_back(i);
+                NN[i].push_back(j);
+            }
+        } 
     }
-    return neigh;
 }
 
-//  Creates the neighbour list for the set of particles
-void UpdateList(){
-    for (int i = 0; i < N; i++){
-        NL.push_back(effective_neighbours(i));
+// Computes the per-radius neighbours list
+void UpdateRL(){
+    RL.clear(); RL = std::vector < std::vector < std::vector <int>>> 
+    (N, std::vector < std::vector <int>>(nr));
+    for (int i=0;i<N-1;i++){
+        for (int j=i+1; j<N; j++){
+            double xij = bcs(X[i], X[j]), yij = bcs(Y[i], Y[j]);
+            double rij = sqrt(xij*xij + yij*yij);
+            for (int k=0; k<nr; k++){
+                if (rij<=k*r_step){
+                    RL[j][k].push_back(i);
+                    RL[i][k].push_back(j);
+                }
+            }
+        }
     }
 }

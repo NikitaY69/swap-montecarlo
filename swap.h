@@ -14,16 +14,17 @@
 // Global variables
 //  Run parameters
 extern const int tau; //Correlation max-duration
-const int cycles = 1; //Number of correlation cycles
+extern const int cycles; //Number of correlation cycles
 extern const int steps; //Monte Carlo sweeps
 extern const double T; //Temperature in units of 1/k_B
 extern const int tw; //Waiting time to start correlation calculations
+extern const int nr; // Number of radius calculations for the correlation lengths
 
 // Simulation parameters
 const int N = 2000; //Number of particles
 const double Size = 44.721359550000003; //Size of the system
 const double sigmaMax = 1.613048; //Maximum diameter of particles
-const double rSkin = 1.25 * sigmaMax; //Radius of neighbours included in NL (e.g. 1.8)
+const double rSkin = 1.2; //Radius of neighbours included in NL (e.g. 1.8)
 const double rC = 1.25 * sigmaMax; //Cutoff radius for calculating potential
 const double rNL = pow(rC+rSkin,2); //NL radius squared
 const double deltaMax = 0.12; //Max particle displacement
@@ -40,30 +41,27 @@ const double pi = 3.14159265358979323846;
 // Arrays
 extern double X[N], Y[N], S[N], X0[N], Y0[N];
 extern double Xfull[N], Yfull[N], Xref[N], Yref[N];
-extern double Xtw[cycles][N], Ytw[cycles][N];
-
+extern std::vector < std::array <double, N>> Xtw, Ytw;
 // X0 initial position at last neighbour list update
 // Xfull real positions (not taking into account periodic boundaries)
 // Xref positition at t=0
 // Xtw position at last aging update
-
+extern double dXCM, dYCM;
 
 //  Neighbour Lists
-extern std::vector < std::vector<int> > NL, nn_0;
-extern std::vector < std::vector < std::vector <int>>> nn_tw;
+extern std::vector < std::vector<int> > NL, NN;
+extern std::vector < std::vector < std::vector <int>>> NN_tw, RL;
 // nn_0 nearest neighbours at t=0
 // nn_tw nearest neighbours at last aging update
 
 //  Function prototypes
-double bcs(double a, double b);
-int Find(std::vector <double> v, double seek);
-void UpdateList(), UpdateAge(int cycle);
-double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2);
-double V(double xj, double yj, double rj, int j);
-std::vector<int> effective_neighbours(int j), nearest_neighbours(int j, double x),
-radius_neighbours(int j, double r);
-double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle, double theta),
-DispCorrLoc(int j), DispCorr(), MicroDispCorrLoc(int j, double r), MicroDispCorr(double r);
+double bcs(double a, double b), Pshift(double a);
+void UpdateAge(int cycle), UpdateNL(), UpdateNN(), UpdateRL();
+double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2),
+       V(double xj, double yj, double rj, int j);
+double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
+       DispCorrLoc(int j), DispCorr();
+std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr();
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);
 
 //  Random number between 0 and 1

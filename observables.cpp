@@ -45,25 +45,28 @@ double MSD(){
 // Correlation functions
 
 //  Calculates the self scattering function
-double FS(int cycle, double theta){
+double FS(int cycle){
     double dotProduct;
     double q = 2*pi/sigmaMax;
     double sum = 0, deltaX, deltaY;
+    int ang = 360;
     
-    for (int i = 0; i < N; i++){
-        deltaX = Xfull[i]-Xtw[cycle][i];
-        deltaY = Yfull[i]-Ytw[cycle][i];
-        dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
-        sum += cos(dotProduct);
+    for (int theta=0; theta<ang; theta++){
+        for (int i = 0; i < N; i++){
+            deltaX = Xfull[i]-Xtw[cycle][i];
+            deltaY = Yfull[i]-Ytw[cycle][i];
+            dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
+            sum += cos(dotProduct);
+        }
     }
-    return sum/N;
+    return sum/(ang*N);
 }
 
 // Computes the bond-breaking correlation function (local)
 double CBLoc(int cycle, int j){
     std::vector<int> intersect;
-    std::vector<int> nn0 = nn_tw[cycle][j]; // neighbors at t=0
-    std::vector<int> nn = nearest_neighbours(j, x_max);
+    std::vector<int> nn0 = NN_tw[cycle][j]; // neighbors at t=0
+    std::vector<int> nn = NN[j];
     std::set_intersection(nn0.begin(), nn0.end(), nn.begin(), nn.end(),
                      std::back_inserter(intersect));
 
@@ -83,7 +86,7 @@ double CB(int cycle){
     } return tot/N;
 }
 
-// Computes the averaged scalar product over all pair of particles
+// Computes the averaged local displacement correlation over all pair of particles
 double DispCorrLoc(int j){
     double sum = 0;
     double deltaXi, deltaYi, deltaXj, deltaYj;
@@ -91,41 +94,52 @@ double DispCorrLoc(int j){
     for (int i=0; i<N; i++){
         if (i!=j){
             deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
+            deltaXi -= dXCM; deltaYi -= dYCM;
             sum += deltaXi*deltaXj + deltaYi*deltaYj;
         }
     }
+    return sum/(N-1);
 }
 
+// Global displacement correlation
 double DispCorr(){
     double sum = 0;
     for (int i=0;i<N;i++){
         sum += DispCorrLoc(i);
-    } return sum/(2*N);
+    } return sum/N;
 }
 
-double MicroDispCorrLoc(int j, double r){
-    double sum = 0;
+// Per-radius local displacement correlation
+std::vector <double> MicroDispCorrLoc(int j){
+    std::vector <double> sum(nr, 0);
     double deltaXi, deltaYi, deltaXj, deltaYj;
     deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
-    std::vector <int> nn_r = radius_neighbours(j, r);
-    for (int i: nn_r){
-        deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
-        sum += deltaXi*deltaXj + deltaYi*deltaYj;
-    }
+    for (int k=0; k<nr; k++){
+        for (int i: RL[j][k]){
+            deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
+            deltaXi -= dXCM; deltaYi -= dYCM;
+            sum[k] += deltaXi*deltaXj + deltaYi*deltaYj;
+        } sum[k] /= RL[j][k].size();
+    } return sum;
 }
 
-double MicroDispCorr(double r){
-    double sum = 0;
-    for (int i=0;i<N;i++){
-        sum += MicroDispCorrLoc(i, r);
-    } return sum/(2*N);
+// Per-radius global dispalcement correlation
+std::vector <double> MicroDispCorr(){
+    std::vector <double> sum(nr, 0);
+    for (int i=0; i<N; i++){
+        std::vector <double> disp_i = MicroDispCorrLoc(i);
+        for (int k=0;k<nr;k++){
+            sum[k] += disp_i[k];
+        } 
+    } return sum;
 }
 
 // Updates the reference points for the correlation functions
 void UpdateAge(int cycle){
-    nn_tw.push_back(std::vector < std::vector <int>>());
+    UpdateNN(); NN_tw.push_back(NN);
+    Xtw.push_back(std::array <double, N>());
+    Ytw.push_back(std::array <double, N>());
     for (int i=0; i<N; i++){
-        nn_tw[cycle].push_back(nearest_neighbours(i, x_max));
         Xtw[cycle][i] = Xfull[i];
         Ytw[cycle][i] = Yfull[i];
     }
