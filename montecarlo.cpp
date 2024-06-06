@@ -92,8 +92,9 @@ void MC(std::string out, int ss){
                     // log_ploc.open(out + "products_loc_" + std::to_string(t) + ".txt");
                     log_cfg << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
+                        std::vector <double> disp_loc = MicroDispCorrLoc(i);
                         log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " " <<
-                        DispCorrLoc(i) << std::endl;
+                        DispCorrLoc(i) << " " << disp_loc[7] << " " << disp_loc[11] << std::endl;
                         // for (int k=1;k<=50;k++){
                         //     log_ploc << MicroDispCorrLoc(i, k*r_step) << " ";
                         // } log_ploc << std::endl;
