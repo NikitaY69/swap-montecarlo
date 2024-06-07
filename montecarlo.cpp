@@ -40,8 +40,12 @@ void MC(std::string out, int ss){
     }
     // File writing
     std::ofstream log_obs, log_cfg, log_ploc, log_p;
+    std::string out_cfg = out + "configs/";
+    std::string out_ploc = out + "micro_p/";
     log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
     log_obs << std::scientific << std::setprecision(8);
+    // creating outdir if not existing
+    fs::create_directory(out_cfg); fs::create_directory(out_ploc);
 
     for(int t = 1; t <= steps; t++){
 
@@ -88,18 +92,17 @@ void MC(std::string out, int ss){
                 // }
                 if(cycles == 1){
                     // Configs
-                    log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-                    // log_ploc.open(out + "products_loc_" + std::to_string(t) + ".txt");
+                    log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
+                    log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
                     log_cfg << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
                         std::vector <double> disp_loc = MicroDispCorrLoc(i);
-                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " " <<
-                        DispCorrLoc(i) << " " << disp_loc[7] << " " << disp_loc[11] << std::endl;
-                        // for (int k=1;k<=50;k++){
-                        //     log_ploc << MicroDispCorrLoc(i, k*r_step) << " ";
-                        // } log_ploc << std::endl;
+                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
+                        for (int k=0;k<nr;k++){
+                            log_ploc << disp_loc[k] << " ";
+                        } log_ploc << DispCorrLoc(i) << std::endl;
                     }
-                    log_cfg.close(); //, log_ploc.close();
+                    log_cfg.close(), log_ploc.close();
                     log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
                     log_p << t << " ";
                     std::vector <double> disp = MicroDispCorr();

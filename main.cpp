@@ -1,6 +1,4 @@
 #include "swap.h"
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
 
 // Run parameters
 const int tau = 5000000;
@@ -13,7 +11,7 @@ const int nr = 50;
 std::string motherdir = "/home/allaglo/collective_corr/";
 
 // Snapshots
-const int dataPoints = 50;
+const int dataPoints = 100;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];

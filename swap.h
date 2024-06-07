@@ -10,6 +10,8 @@
 #include <sstream> 
 #include <iomanip>
 #include <vector> 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 
 // Global variables
 //  Run parameters
