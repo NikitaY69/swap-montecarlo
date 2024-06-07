@@ -8,7 +8,7 @@ const int tw = 1;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
 const double T = 0.04; 
-const int nr = 20;
+const int nr = 50;
 
 std::string motherdir = "/home/allaglo/collective_corr/";
 

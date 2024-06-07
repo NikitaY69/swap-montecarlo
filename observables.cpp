@@ -91,6 +91,7 @@ double DispCorrLoc(int j){
     double sum = 0;
     double deltaXi, deltaYi, deltaXj, deltaYj;
     deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
+    deltaXj -= dXCM; deltaYj -= dYCM;
     for (int i=0; i<N; i++){
         if (i!=j){
             deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
@@ -114,6 +115,7 @@ std::vector <double> MicroDispCorrLoc(int j){
     std::vector <double> sum(nr, 0);
     double deltaXi, deltaYi, deltaXj, deltaYj;
     deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
+    deltaXj -= dXCM; deltaYj -= dYCM;
     for (int k=0; k<nr; k++){
         for (int i: RL[j][k]){
             deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
