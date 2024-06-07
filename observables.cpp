@@ -117,11 +117,14 @@ std::vector <double> MicroDispCorrLoc(int j){
     deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
     deltaXj -= dXCM; deltaYj -= dYCM;
     for (int k=0; k<nr; k++){
-        for (int i: RL[j][k]){
-            deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
-            deltaXi -= dXCM; deltaYi -= dYCM;
-            sum[k] += deltaXi*deltaXj + deltaYi*deltaYj;
-        } sum[k] /= RL[j][k].size();
+        if (RL[j][k].size()==0) sum[k] = 0;
+        else{
+            for (int i: RL[j][k]){
+                deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
+                deltaXi -= dXCM; deltaYi -= dYCM;
+                sum[k] += deltaXi*deltaXj + deltaYi*deltaYj;
+            } sum[k] /= RL[j][k].size();
+        }
     } return sum;
 }
 
