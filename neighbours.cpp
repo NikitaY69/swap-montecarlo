@@ -1,5 +1,5 @@
 #include "swap.h"
-double r_step = 35/(nr-1);
+double r_step = 35.0/(nr-1);
 
 //  Calculates difference of a and b while applying periodic boundary conditions
 double bcs(double a, double b) {return Size/2 - std::abs(std::abs(a-b)-Size/2);}
@@ -48,7 +48,8 @@ void UpdateRL(){
             double xij = bcs(X[i], X[j]), yij = bcs(Y[i], Y[j]);
             double rij = sqrt(xij*xij + yij*yij);
             for (int k=0; k<nr; k++){
-                if (rij<=k*r_step){
+                double r = k*r_step;
+                if (rij<=r){
                     RL[j][k].push_back(i);
                     RL[i][k].push_back(j);
                 }
