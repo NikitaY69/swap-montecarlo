@@ -1,17 +1,17 @@
 #include "swap.h"
 
 // Run parameters
-const int tau = 5000000;
+const int tau = 500000;
 const int tw = 1;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
 const double T = 0.04; 
 const int nr = 50;
 
-std::string motherdir = "/home/allaglo/collective_corr/";
+std::string motherdir = fs::current_path();
 
 // Snapshots
-const int dataPoints = 100;
+const int dataPoints = 1000;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
