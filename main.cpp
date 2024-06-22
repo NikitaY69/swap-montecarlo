@@ -11,7 +11,7 @@ const int nr = 50;
 std::string motherdir = fs::current_path();
 
 // Snapshots
-const int dataPoints = 1000;
+const int dataPoints = 100;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];

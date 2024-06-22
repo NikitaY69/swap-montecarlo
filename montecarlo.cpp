@@ -69,9 +69,9 @@ void MC(std::string out, int ss){
         }
     
         // Updating reference observables
-        // if((t-1)%tw == 0 && cycleCounter < cycles){
-        //     UpdateAge(cycleCounter); cycleCounter++;
-        // } 
+        if((t-1)%tw == 0 && cycleCounter < cycles){
+            UpdateAge(cycleCounter); cycleCounter++;
+        } 
 
         // Writing observables to text file
         int f = std::count(linPoints, linPoints+ss, 1.0*t);
@@ -86,15 +86,12 @@ void MC(std::string out, int ss){
             for(int s=0; s<f; s++){
                 // looping different eventual tws
                 int cycle = twPoints[dataCounter];
-                // double FSavg = 0;
-                // for(int deg = 0; deg < 90; deg++){
-                //     FSavg += FS(cycle, deg);
-                // }
                 if(cycles == 1){
                     // Configs
                     log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
                     log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
                     log_cfg << std::scientific << std::setprecision(8);
+                    log_ploc << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
                         std::vector <double> disp_loc = MicroDispCorrLoc(i);
                         log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
@@ -112,7 +109,7 @@ void MC(std::string out, int ss){
                     // saving format: timestep Vtot MSD Fs CB 
                     
                 } else{
-                    log_obs << t << " " << cycle << " "
+                    log_obs << t << " " << cycle << " " << FS(cycle) << " "
                             << CB(cycle) << std::endl;
                     // saving format: timestep Fs CB 
                 }
