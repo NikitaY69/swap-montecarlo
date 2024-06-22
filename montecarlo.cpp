@@ -44,6 +44,7 @@ void MC(std::string out, int ss){
     std::string out_ploc = out + "micro_p/";
     log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
     log_obs << std::scientific << std::setprecision(8);
+    log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
     fs::create_directory(out_cfg); fs::create_directory(out_ploc);
 
@@ -109,8 +110,8 @@ void MC(std::string out, int ss){
                     // saving format: timestep Vtot MSD Fs CB 
                     
                 } else{
-                    log_obs << t << " " << cycle << " " << FS(cycle) << " "
-                            << CB(cycle) << std::endl;
+                    log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
+                    FS(cycle) << " " << CB(cycle) << std::endl;
                     // saving format: timestep Fs CB 
                 }
                 dataCounter++;
