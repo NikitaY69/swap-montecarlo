@@ -12,6 +12,7 @@
 #include <vector> 
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
+const std::string motherdir = fs::current_path();
 
 // Global variables
 //  Run parameters
@@ -26,7 +27,7 @@ extern const int nr; // Number of radius calculations for the correlation length
 const int N = 2000; //Number of particles
 const double Size = 44.721359550000003; //Size of the system
 const double sigmaMax = 1.613048; //Maximum diameter of particles
-const double rSkin = 1.2; //Radius of neighbours included in NL (e.g. 1.8)
+const double rSkin = 1.5; //Radius of neighbours included in NL (e.g. 1.8)
 const double rC = 1.25 * sigmaMax; //Cutoff radius for calculating potential
 const double rNL = pow(rC+rSkin,2); //NL radius squared
 const double deltaMax = 0.12; //Max particle displacement
@@ -57,6 +58,7 @@ extern std::vector < std::vector < std::vector <int>>> NN_tw, RL;
 // nn_tw nearest neighbours at last aging update
 
 //  Function prototypes
+void ReadCFG(std::string input);
 double bcs(double a, double b), Pshift(double a);
 void UpdateAge(int cycle), UpdateNL(), UpdateNN(), UpdateRL();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2),
@@ -64,7 +66,7 @@ double PairPotential(double x1, double y1, double s1, double x2, double y2, doub
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
        DispCorrLoc(int j), DispCorr();
 std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr();
-void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);
+void TryDisp(int j), TrySwap(int j, int k), MC(std::string in, std::string out, int ss);
 
 //  Random number between 0 and 1
 #define ranf() \

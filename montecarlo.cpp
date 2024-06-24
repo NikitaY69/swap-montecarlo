@@ -3,7 +3,8 @@
 double dXCM, dYCM;
 
 // Monte Carlo Simulation
-void MC(std::string out, int ss){
+void MC(std::string in, std::string out, int ss){
+
     int dataCounter = 0, cycleCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     // Building snapshots list (log-spaced)
@@ -39,100 +40,65 @@ void MC(std::string out, int ss){
         linPoints[k] = (tau/(ss))*k;
     }
     // File writing
-    std::ofstream log_obs, log_cfg, log_ploc, log_p;
-    std::string out_cfg = out + "configs/";
+    std::ofstream log_obs, log_ploc, log_p;
     std::string out_ploc = out + "micro_p/";
     log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
     log_obs << std::scientific << std::setprecision(8);
     log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
-    fs::create_directory(out_cfg); fs::create_directory(out_ploc);
+    fs::create_directory(out_ploc);
 
-    for(int t = 1; t <= steps; t++){
+    for(double t_: linPoints){
+        // auto start = std::chrono::high_resolution_clock::now();
+        int t = int(t_);
+        std::string cfg = in + "cfg_" + std::to_string(t) + ".xy";
+        ReadCFG(cfg);
 
-        // Updating NL
-        if((t-1) % 150 == 0) {//Change number?
-            // every 150 steps we check if we need to update the NL
-            for (int i = 0; i < N; i++){
-                deltaX[i] = bcs(X[i],X0[i]);
-                deltaY[i] = bcs(Y[i],Y0[i]);
-                deltaR2[i] = deltaX[i]*deltaX[i] + deltaY[i]*deltaY[i];
-            R2Max = std::max_element(deltaR2,deltaR2+N)[0];
-            }
-            if(R2Max > RUpdate){
-                UpdateNL();
-                R2Max = 0;
-                for(int j = 0; j < N; j++){
-                    X0[j] = X[j];
-                    Y0[j] = Y[j];
-                }
+        if(t==0){
+            for(int i=0;i<N;i++){
+                Xref[i] = Xfull[i]; Yref[i] = Yfull[i];
             }
         }
-    
+
         // Updating reference observables
         if((t-1)%tw == 0 && cycleCounter < cycles){
             UpdateAge(cycleCounter); cycleCounter++;
         } 
+        
+        UpdateNL(); UpdateNN(); UpdateRL(); // updating nearest neighbours
 
-        // Writing observables to text file
-        int f = std::count(linPoints, linPoints+ss, 1.0*t);
-        // int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
-        if(f>0){ // checking if saving time
-            UpdateNN(); UpdateRL(); // updating nearest neighbours
-            dXCM = 0; dYCM = 0;
+        dXCM = 0; dYCM = 0;
+        if(t!=0){
             for (int i=0;i<N;i++){
                 double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
                 dXCM += deltaX; dYCM += deltaY;
             } dXCM /= N; dYCM /= N;
-            for(int s=0; s<f; s++){
-                // looping different eventual tws
-                int cycle = twPoints[dataCounter];
-                if(cycles == 1){
-                    // Configs
-                    log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
-                    log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
-                    log_cfg << std::scientific << std::setprecision(8);
-                    log_ploc << std::scientific << std::setprecision(8);
-                    for (int i = 0; i<N; i++){
-                        std::vector <double> disp_loc = MicroDispCorrLoc(i);
-                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
-                        for (int k=0;k<nr;k++){
-                            log_ploc << disp_loc[k] << " ";
-                        } log_ploc << DispCorrLoc(i) << std::endl;
-                    }
-                    log_cfg.close(), log_ploc.close();
-                    log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
-                    log_p << t << " ";
-                    std::vector <double> disp = MicroDispCorr();
-                    for (int k=0;k<nr;k++){
-                            log_p << disp[k] << " ";
-                        } log_p << std::endl;
-                    // saving format: timestep Vtot MSD Fs CB 
-                    
-                } else{
-                    log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                    FS(cycle) << " " << CB(cycle) << std::endl;
-                    // saving format: timestep Fs CB 
-                }
-                dataCounter++;
-            }  
         }
-        if (cycles > 1 && std::count(endingPoints, endingPoints+cycles, 1.0*t) > 0){
-            log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-            log_cfg << std::scientific << std::setprecision(8);
-            for (int i = 0; i<N; i++){
-                log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
-            }
-            log_cfg.close();
+        int cycle = twPoints[dataCounter];
+        // Configs
+        log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
+        log_ploc << std::scientific << std::setprecision(8);
+        for (int i = 0; i<N; i++){
+            std::vector <double> disp_loc = MicroDispCorrLoc(i);
+            for (int k=0;k<nr;k++){
+                log_ploc << disp_loc[k] << " ";
+            } log_ploc << DispCorrLoc(i) << std::endl;
         }
-        // Doing the MC
-        for (int i = 0; i < N; i++){
-            if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
-            else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
-        }
+        log_ploc.close();
+        log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
+        log_p << t << " ";
+        std::vector <double> disp = MicroDispCorr();
+        for (int k=0;k<nr;k++){
+                log_p << disp[k] << " ";
+            } log_p << std::endl;
+        // saving format: timestep Vtot MSD Fs CB 
+        dataCounter++;
 
-        if((t-1)%100==0) std::cout << (t-1) << std::endl;; // Counting steps
-    };
+        // auto end = std::chrono::high_resolution_clock::now();
+        // std::chrono::duration<double> duration = end - start;
+        // std::cout << duration.count() << std::endl;
+        std::cout << t << std::endl;
+    }
     log_obs.close(), log_p.close();
 }
 
