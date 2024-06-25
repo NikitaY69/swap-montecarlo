@@ -139,6 +139,18 @@ std::vector <double> MicroDispCorr(){
     } return sum;
 }
 
+// Computes the sigma-dependence of the potential energy at the particle level
+std::vector <double> SigmaScan(int j){
+    int ns = 100;
+    double dS = 0.002;
+    double s;
+    std::vector <double> Vs(ns, 0);
+    for (int k=0; k<ns; k++){
+        s = S[j]+k*dS;
+        Vs[k] = V(X[j], Y[j], s, j);
+    } return Vs;
+}
+
 // Updates the reference points for the correlation functions
 void UpdateAge(int cycle){
     UpdateNN(); NN_tw.push_back(NN);
