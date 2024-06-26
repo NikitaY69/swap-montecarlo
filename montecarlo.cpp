@@ -41,10 +41,10 @@ void MC(std::string in, std::string out, int ss){
     }
     // File writing
     std::ofstream log_obs, log_ploc, log_p;
-    std::string out_ploc = out + "sigma_scan/";
-    // log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
-    // log_obs << std::scientific << std::setprecision(8);
-    // log_p << std::scientific << std::setprecision(8);
+    std::string out_ploc = out + "micro_p/";
+    log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
+    log_obs << std::scientific << std::setprecision(8);
+    log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
     fs::create_directory(out_ploc);
 
@@ -56,7 +56,7 @@ void MC(std::string in, std::string out, int ss){
         
         if(t==0){
             for(int i=0;i<N;i++){
-                Xref[i] = Xfull[i]; Yref[i] = Yfull[i];
+                Xref[i] = X[i]; Yref[i] = Y[i];
             }
         }
 
@@ -76,23 +76,24 @@ void MC(std::string in, std::string out, int ss){
         }
         int cycle = twPoints[dataCounter];
         // Configs
-        log_ploc.open(out_ploc + "scan_" + std::to_string(t) + ".txt");
+        log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
         log_ploc << std::scientific << std::setprecision(8);
         for (int i = 0; i<N; i++){
-            std::vector <double> u_sigma = SigmaScan(i);
-            for (int k=0;k<ns;k++){
-                log_ploc << u_sigma[k] << " ";
+            std::vector <double> disp_loc = MicroDispCorrLoc(i);
+            // std::vector <double> u_sigma = SigmaScan(i);
+            for (int k=0;k<nr;k++){
+                log_ploc << disp_loc[k] << " ";
             } log_ploc << std::endl;
-        } log_ploc << VTotal()/(2*N) << std::endl;
+        };
         log_ploc.close();
-        // log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
-        // log_p << t << " ";
-        // std::vector <double> disp = MicroDispCorr();
-        // for (int k=0;k<nr;k++){
-        //         log_p << disp[k] << " ";
-        //     } log_p << std::endl;
-        // // saving format: timestep Vtot MSD Fs CB 
-        // dataCounter++;
+        log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
+        log_p << t << " ";
+        std::vector <double> disp = MicroDispCorr();
+        for (int k=0;k<nr;k++){
+                log_p << disp[k] << " ";
+            } log_p << std::endl;
+        // saving format: timestep Vtot MSD Fs CB 
+        dataCounter++;
 
         // auto end = std::chrono::high_resolution_clock::now();
         // std::chrono::duration<double> duration = end - start;
