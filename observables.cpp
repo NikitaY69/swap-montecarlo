@@ -88,8 +88,8 @@ double CB(int cycle){
 
 // Computes the averaged local displacement correlation over all pair of particles
 double DispCorrLoc(int j){
-    double sum = 0;
-    double deltaXi, deltaYi, deltaXj, deltaYj;
+    double sum = 0, norm_j, norm_sum;
+    double deltaXi, deltaYi, deltaXj, deltaYj, deltaXtot=0, deltaYtot=0;
     deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
     deltaXj -= dXCM; deltaYj -= dYCM;
     for (int i=0; i<N; i++){
@@ -97,9 +97,11 @@ double DispCorrLoc(int j){
             deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
             deltaXi -= dXCM; deltaYi -= dYCM;
             sum += deltaXi*deltaXj + deltaYi*deltaYj;
+            deltaXtot += deltaXi; deltaYtot += deltaYi;
         }
-    }
-    return sum/(N-1);
+    } norm_j = sqrt(deltaXj*deltaXj + deltaYj*deltaYj);
+    norm_sum = sqrt(deltaXtot*deltaXtot + deltaYtot*deltaYtot);
+    return sum/(norm_j*norm_sum); // return sum/(N-1);
 }
 
 // Global displacement correlation
@@ -113,17 +115,22 @@ double DispCorr(){
 // Per-radius local displacement correlation
 std::vector <double> MicroDispCorrLoc(int j){
     std::vector <double> sum(nr, 0);
-    double deltaXi, deltaYi, deltaXj, deltaYj;
+    double norm_j, norm_sum;
+    double deltaXi, deltaYi, deltaXj, deltaYj, deltaXtot, deltaYtot;
     deltaXj = Xfull[j]-Xref[j], deltaYj = Yfull[j]-Yref[j];
     deltaXj -= dXCM; deltaYj -= dYCM;
+    norm_j = sqrt(deltaXj*deltaXj + deltaYj*deltaYj);
     for (int k=0; k<nr; k++){
         if (RL[j][k].size()==0) sum[k] = 0;
         else{
+            deltaXtot = 0; deltaYtot = 0;
             for (int i: RL[j][k]){
                 deltaXi=Xfull[i]-Xref[i]; deltaYi=Yfull[i]-Yref[i];
                 deltaXi -= dXCM; deltaYi -= dYCM;
                 sum[k] += deltaXi*deltaXj + deltaYi*deltaYj;
-            } sum[k] /= RL[j][k].size();
+                deltaXtot += deltaXi; deltaYtot += deltaYi;
+            } norm_sum = sqrt(deltaXtot*deltaXtot + deltaYtot*deltaYtot);
+            sum[k] /= (norm_j*norm_sum); // sum[k] /= RL[j][k].size();
         }
     } return sum;
 }
