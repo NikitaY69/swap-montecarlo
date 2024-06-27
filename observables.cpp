@@ -56,6 +56,7 @@ double FS(int cycle){
         for (int i = 0; i < N; i++){
             deltaX = Xfull[i]-Xtw[cycle][i];
             deltaY = Yfull[i]-Ytw[cycle][i];
+            deltaX -= dXCM; deltaY -= dYCM;
             dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
             sum += cos(dotProduct);
         }

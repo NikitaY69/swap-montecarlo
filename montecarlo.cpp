@@ -104,7 +104,7 @@ void MC(std::string out, int ss, int cfgs){
             }  
         }
         if(log>0){ // checking if saving time
-            UpdateNN(); // updating nearest neighbours
+            UpdateNN(); UpdateRL(); // updating nearest neighbours
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
                 double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
