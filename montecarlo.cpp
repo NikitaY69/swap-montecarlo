@@ -3,13 +3,13 @@
 double dXCM, dYCM;
 
 // Monte Carlo Simulation
-void MC(std::string out, int ss){
-    int dataCounter = 0, cycleCounter = 0;
+void MC(std::string out, int ss, int cfgs){
+    int cycle = 0, cycleCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     // Building snapshots list (log-spaced)
     std::vector < std::pair <double, double>> pairs;
     std::vector <double> samplePoints, twPoints;
-    double endingPoints[cycles], linPoints[ss];
+    double endingPoints[cycles], linPoints[cfgs];
     double exponents = log10(tau)/(ss-1);
 
     for(int c=0; c<cycles; c++){
@@ -35,8 +35,8 @@ void MC(std::string out, int ss){
         endingPoints[c] = c*tw + tau;
     }
     // Linspaced points
-    for (int k=1;k<=ss;k++){
-        linPoints[k] = (tau/(ss))*k;
+    for (int k=1;k<=cfgs;k++){
+        linPoints[k] = (tau/(cfgs))*k;
     }
     // File writing
     std::ofstream log_obs, log_cfg, log_ploc, log_p;
@@ -75,56 +75,62 @@ void MC(std::string out, int ss){
         } 
 
         // Writing observables to text file
-        int f = std::count(linPoints, linPoints+ss, 1.0*t);
+        int lin = std::count(linPoints, linPoints+cfgs, 1.0*t);
+        int log = std::count(samplePoints.begin(), samplePoints.end(), 1.0*t);
         // int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
-        if(f>0){ // checking if saving time
-            UpdateNN(); UpdateRL(); // updating nearest neighbours
+        if(lin>0){ // checking if saving time
+            UpdateRL(); // updating nearest neighbours
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
                 double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
                 dXCM += deltaX; dYCM += deltaY;
             } dXCM /= N; dYCM /= N;
-            for(int s=0; s<f; s++){
+            for(int s=0; s<lin; s++){
                 // looping different eventual tws
-                int cycle = twPoints[dataCounter];
-                if(cycles == 1){
-                    // Configs
+                // Configs
+                log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
+                log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
+                log_cfg << std::scientific << std::setprecision(8);
+                log_ploc << std::scientific << std::setprecision(8);
+                for (int i = 0; i<N; i++){
+                    std::vector <double> disp_loc = MicroDispCorrLoc(i);
+                    log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
+                    for (int k=0;k<nr;k++){
+                        log_ploc << disp_loc[k] << " ";
+                    } log_ploc << std::endl;
+                }
+                log_cfg.close(), log_ploc.close();
+                // saving format: timestep Vtot MSD Fs CB 
+            }  
+        }
+        if(log>0){ // checking if saving time
+            UpdateNN(); // updating nearest neighbours
+            dXCM = 0; dYCM = 0;
+            for (int i=0;i<N;i++){
+                double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
+                dXCM += deltaX; dYCM += deltaY;
+            } dXCM /= N; dYCM /= N;
+            for(int s=0; s<log; s++){
+                // looping different eventual tws
+                // Configs
+                if(! fs::exists (out_cfg + "cfg_" + std::to_string(t) + ".xy")){
                     log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
-                    log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
                     log_cfg << std::scientific << std::setprecision(8);
-                    log_ploc << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
                         std::vector <double> disp_loc = MicroDispCorrLoc(i);
                         log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
-                        for (int k=0;k<nr;k++){
-                            log_ploc << disp_loc[k] << " ";
-                        } log_ploc << DispCorrLoc(i) << std::endl;
                     }
-                    log_cfg.close(), log_ploc.close();
-                    log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
-                    log_p << t << " ";
-                    std::vector <double> disp = MicroDispCorr();
-                    for (int k=0;k<nr;k++){
-                            log_p << disp[k] << " ";
-                        } log_p << std::endl;
-                    // saving format: timestep Vtot MSD Fs CB 
-                    
-                } else{
-                    log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                    FS(cycle) << " " << CB(cycle) << std::endl;
-                    // saving format: timestep Fs CB 
-                }
-                dataCounter++;
+                    log_cfg.close();
+                } log_p << t << " ";
+                std::vector <double> disp = MicroDispCorr();
+                for (int k=0;k<nr;k++){
+                    log_p << disp[k] << " ";
+                } log_p << std::endl;
+                log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
+                    MSD() << " " << FS(cycle) << " " << CB(cycle) << std::endl;
+                // saving format: timestep Vtot MSD Fs CB 
             }  
-        }
-        if (cycles > 1 && std::count(endingPoints, endingPoints+cycles, 1.0*t) > 0){
-            log_cfg.open(out + "cfg_" + std::to_string(t) + ".xy");
-            log_cfg << std::scientific << std::setprecision(8);
-            for (int i = 0; i<N; i++){
-                log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
-            }
-            log_cfg.close();
-        }
+        };
         // Doing the MC
         for (int i = 0; i < N; i++){
             if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8

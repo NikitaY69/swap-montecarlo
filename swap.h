@@ -64,7 +64,7 @@ double PairPotential(double x1, double y1, double s1, double x2, double y2, doub
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
        DispCorrLoc(int j), DispCorr();
 std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr();
-void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss);
+void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss, int cfgs);
 
 //  Random number between 0 and 1
 #define ranf() \

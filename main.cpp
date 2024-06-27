@@ -1,7 +1,7 @@
 #include "swap.h"
 
 // Run parameters
-const int tau = 500000;
+const int tau = 10000000;
 const int tw = 1;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
@@ -11,7 +11,8 @@ const int nr = 50;
 std::string motherdir = fs::current_path();
 
 // Snapshots
-const int dataPoints = 100;
+const int linPoints = 100;
+const int logPoints = 100;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
@@ -28,7 +29,6 @@ int main(int argc, const char * argv[]) {
     srand(time(NULL)*1.0); //Random number generator
     std::string input = motherdir + argv[1];
     std::string outdir = motherdir + argv[2] + "results/";
-
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
         // creating outdir if not existing
@@ -59,12 +59,11 @@ int main(int argc, const char * argv[]) {
         std::cout << input << std::endl;
         return 0;
     }
-
     UpdateNL(); // First list of neighbours
 
     // // Do simulation with timer
     double t0 = time(NULL); // Timer
-    MC(outdir, dataPoints); 
+    MC(outdir, logPoints, linPoints); 
     std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     std::cout << "Done" << std::endl;
     return 0;
