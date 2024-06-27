@@ -42,8 +42,9 @@ void MC(std::string in, std::string out, int ss){
     // File writing
     std::ofstream log_obs, log_ploc, log_p;
     std::string out_ploc = out + "micro_p/";
-    log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
-    log_obs << std::scientific << std::setprecision(8);
+    // log_obs.open(out + "obs.txt"), 
+    log_p.open(out + "products.txt");
+    // log_obs << std::scientific << std::setprecision(8);
     log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
     fs::create_directory(out_ploc);
@@ -86,7 +87,7 @@ void MC(std::string in, std::string out, int ss){
         //     } log_ploc << std::endl;
         // };
         // log_ploc.close();
-        log_obs << t << " " << MSD() << std::endl;
+        // log_obs << t << " " << MSD() << std::endl;
         log_p << t << " ";
         std::vector <double> disp = MicroDispCorr();
         for (int k=0;k<nr;k++){
@@ -100,7 +101,8 @@ void MC(std::string in, std::string out, int ss){
         // std::cout << duration.count() << std::endl;
         std::cout << t << std::endl;
     }
-    log_obs.close(), log_p.close();
+    // log_obs.close(), 
+    log_p.close();
 }
 
 //  Tries displacing one particle j by vector dr = (dx, dy)
