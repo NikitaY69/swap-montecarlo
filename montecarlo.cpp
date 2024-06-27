@@ -42,9 +42,9 @@ void MC(std::string in, std::string out, int ss){
     // File writing
     std::ofstream log_obs, log_ploc, log_p;
     std::string out_ploc = out + "micro_p/";
-    // log_obs.open(out + "obs.txt"), 
+    log_obs.open(out + "obs.txt"), 
     log_p.open(out + "products.txt");
-    // log_obs << std::scientific << std::setprecision(8);
+    log_obs << std::scientific << std::setprecision(8);
     log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
     fs::create_directory(out_ploc);
@@ -69,7 +69,7 @@ void MC(std::string in, std::string out, int ss){
         UpdateNL(); UpdateNN(); UpdateRL(); // updating nearest neighbours
         
         dXCM = 0; dYCM = 0;
-        if(t!=0){
+        if(t!=1){
             for (int i=0;i<N;i++){
                 double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
                 dXCM += deltaX; dYCM += deltaY;
@@ -87,7 +87,8 @@ void MC(std::string in, std::string out, int ss){
         //     } log_ploc << std::endl;
         // };
         // log_ploc.close();
-        // log_obs << t << " " << MSD() << std::endl;
+        log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
+                    MSD() << " " << FS(cycle) << " " << CB(cycle) << std::endl;
         log_p << t << " ";
         std::vector <double> disp = MicroDispCorr();
         for (int k=0;k<nr;k++){
@@ -101,7 +102,7 @@ void MC(std::string in, std::string out, int ss){
         // std::cout << duration.count() << std::endl;
         std::cout << t << std::endl;
     }
-    // log_obs.close(), 
+    log_obs.close(), 
     log_p.close();
 }
 
