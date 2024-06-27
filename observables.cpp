@@ -37,6 +37,7 @@ double MSD(){
         for (int i = 0; i < N; i++){
             deltaX = Xfull[i]-Xref[i];
             deltaY = Yfull[i]-Yref[i];
+            deltaX -= dXCM; deltaY -= dYCM;
             sum += deltaX*deltaX + deltaY*deltaY;
     }
     return sum/N;

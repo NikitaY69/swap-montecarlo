@@ -48,15 +48,15 @@ void MC(std::string in, std::string out, int ss){
     // creating outdir if not existing
     fs::create_directory(out_ploc);
 
-    for(double t_: linPoints){
+    for(double t_: samplePoints){
         // auto start = std::chrono::high_resolution_clock::now();
         int t = int(t_);
         std::string cfg = in + "cfg_" + std::to_string(t) + ".xy";
         ReadCFG(cfg);
         
-        if(t==0){
+        if(t==1){
             for(int i=0;i<N;i++){
-                Xref[i] = X[i]; Yref[i] = Y[i];
+                Xref[i] = Xfull[i]; Yref[i] = Yfull[i];
             }
         }
 
@@ -76,17 +76,17 @@ void MC(std::string in, std::string out, int ss){
         }
         int cycle = twPoints[dataCounter];
         // Configs
-        log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
-        log_ploc << std::scientific << std::setprecision(8);
-        for (int i = 0; i<N; i++){
-            std::vector <double> disp_loc = MicroDispCorrLoc(i);
-            // std::vector <double> u_sigma = SigmaScan(i);
-            for (int k=0;k<nr;k++){
-                log_ploc << disp_loc[k] << " ";
-            } log_ploc << std::endl;
-        };
-        log_ploc.close();
-        log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
+        // log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
+        // log_ploc << std::scientific << std::setprecision(8);
+        // for (int i = 0; i<N; i++){
+        //     std::vector <double> disp_loc = MicroDispCorrLoc(i);
+        //     // std::vector <double> u_sigma = SigmaScan(i);
+        //     for (int k=0;k<nr;k++){
+        //         log_ploc << disp_loc[k] << " ";
+        //     } log_ploc << std::endl;
+        // };
+        // log_ploc.close();
+        log_obs << t << " " << MSD() << std::endl;
         log_p << t << " ";
         std::vector <double> disp = MicroDispCorr();
         for (int k=0;k<nr;k++){
