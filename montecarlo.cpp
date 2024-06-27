@@ -66,7 +66,7 @@ void MC(std::string in, std::string out, int ss){
             UpdateAge(cycleCounter); cycleCounter++;
         } 
         
-        UpdateNL(); UpdateNN(); UpdateRL(); // updating nearest neighbours
+        UpdateNL(); // UpdateNN(); UpdateRL(); // updating nearest neighbours
         
         dXCM = 0; dYCM = 0;
         if(t!=1){
@@ -88,12 +88,12 @@ void MC(std::string in, std::string out, int ss){
         // };
         // log_ploc.close();
         log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                    MSD() << " " << FS(cycle) << " " << CB(cycle) << std::endl;
-        log_p << t << " ";
-        std::vector <double> disp = MicroDispCorr();
-        for (int k=0;k<nr;k++){
-                log_p << disp[k] << " ";
-            } log_p << std::endl;
+                    MSD() << std::endl;//<< " " << FS(cycle) << " " << CB(cycle) << std::endl;
+        // log_p << t << " ";
+        // std::vector <double> disp = MicroDispCorr();
+        // for (int k=0;k<nr;k++){
+        //         log_p << disp[k] << " ";
+        //     } log_p << std::endl;
         // saving format: timestep Vtot MSD Fs CB 
         dataCounter++;
 
