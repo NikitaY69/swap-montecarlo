@@ -1,11 +1,11 @@
 #include "swap.h"
 
 // Run parameters
-const int tau = 10000000;
+const int tau = 5000000;
 const int tw = 1;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.04; 
+const double T = 0.13; 
 const int nr = 50;
 
 std::string motherdir = fs::current_path();
