@@ -133,9 +133,9 @@ void MC(std::string out, int ss, int cfgs){
         };
         // Doing the MC
         for (int i = 0; i < N; i++){
-            // TryDisp(i);
-            if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
-            else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
+            TryDisp(i);
+            // if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
+            // else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
 
         if((t-1)%100==0) std::cout << (t-1) << std::endl;; // Counting steps
