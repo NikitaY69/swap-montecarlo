@@ -1,18 +1,18 @@
 #include "swap.h"
 
 // Run parameters
-const int tau = 1000000;
+const int tau = 100000000;
 const int tw = 1;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.04; 
+const double T = 0.025; 
 const int nr = 50;
 
 std::string motherdir = fs::current_path();
 
 // Snapshots
-const int linPoints = 100;
-const int logPoints = 50;
+const int linPoints = 2000;
+const int logPoints = 225;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
@@ -49,9 +49,9 @@ int main(int argc, const char * argv[]) {
             while (ss >> value){
                 cfg[i].push_back(value);
             }
-            S[i] = cfg[i][0]; X[i] = Pshift(cfg[i][1]); Y[i] = Pshift(cfg[i][2]);
-            X0[i] = X[i]; Xfull[i] = X[i]; Xref[i] = X[i];
-            Y0[i] = Y[i]; Yfull[i] = Y[i]; Yref[i] = Y[i];
+            S[i] = cfg[i][0]; Xfull[i] = cfg[i][1]; Yfull[i] = cfg[i][2];
+            X[i] = Pshift(Xfull[i]); Xref[i] = X[i]; X0[i] = X[i]; 
+            Y[i] = Pshift(Yfull[i]); Yref[i] = Y[i]; Y0[i] = Y[i]; 
             i++;}
         input_file.close();
 
