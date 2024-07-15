@@ -42,7 +42,7 @@ const double c4 = -21/pow(1.25,16);
 const double pi = 3.14159265358979323846;
 
 // Arrays
-extern double X[N], Y[N], S[N], X0[N], Y0[N];
+extern double X[N], Y[N], S[N], Sref[N], X0[N], Y0[N];
 extern double Xfull[N], Yfull[N], Xref[N], Yref[N];
 extern std::vector < std::array <double, N>> Xtw, Ytw;
 // X0 initial position at last neighbour list update
@@ -63,7 +63,7 @@ void UpdateAge(int cycle), UpdateNL(), UpdateNN(), UpdateRL();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2),
        V(double xj, double yj, double rj, int j);
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
-       DispCorrLoc(int j), DispCorr();
+       DispCorrLoc(int j), DispCorr(), C_sigma();
 std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr(), SigmaScan(int j);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss, int cfgs);
 

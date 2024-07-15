@@ -17,7 +17,7 @@ const int logPoints = 50;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
-double Xfull[N], Yfull[N], Xref[N], Yref[N];
+double Xfull[N], Yfull[N], Xref[N], Yref[N], Sref[N];
 std::vector < std::array <double, N>> Xtw, Ytw;
 std::vector < std::vector<int> > NL(N), NN(N);
 std::vector < std::vector < std::vector <int>>> NN_tw;
@@ -51,8 +51,9 @@ int main(int argc, const char * argv[]) {
                 cfg[i].push_back(value);
             }
             S[i] = cfg[i][0]; X[i] = Pshift(cfg[i][1]); Y[i] = Pshift(cfg[i][2]);
-            X0[i] = X[i]; Xfull[i] = X[i]; Xref[i] = X[i];
+            X0[i] = X[i]; Xfull[i] = X[i]; Xref[i] = X[i]; 
             Y0[i] = Y[i]; Yfull[i] = Y[i]; Yref[i] = Y[i];
+            Sref[i] = S[i];
             i++;}
         input_file.close();
 
