@@ -1,6 +1,7 @@
 #include "swap.h"
 
 double dXCM, dYCM;
+double swapCount[N] = {0};
 
 // Monte Carlo Simulation
 void MC(std::string out, int ss, int cfgs){
@@ -99,7 +100,8 @@ void MC(std::string out, int ss, int cfgs){
                 for (int i = 0; i<N; i++){
                     std::vector <double> disp_loc = MicroDispCorrLoc(i);
                     std::vector <double> u_sigma = SigmaScan(i);
-                    log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
+                    log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " " 
+                            << swapCount[i] << std::endl;
                     for (int k=0;k<nr;k++){
                         log_ploc << disp_loc[k] << " ";
                     } log_ploc << std::endl;
@@ -128,7 +130,8 @@ void MC(std::string out, int ss, int cfgs){
                     log_cfg << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
                         std::vector <double> disp_loc = MicroDispCorrLoc(i);
-                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
+                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " "
+                        << swapCount[i] << std::endl;
                     }
                     log_cfg.close();
                 } log_p << t << " ";
@@ -185,11 +188,13 @@ void TrySwap(int j, int k){
             double Rnew = S[k];
             S[k] = S[j];
             S[j] = Rnew;
+            swapCount[j] += 1; swapCount[k] += 1;
         }
         else if (exp(-deltaE/T) > ranf()){
             double Rnew = S[k];
             S[k] = S[j];
             S[j] = Rnew;
+            swapCount[j] += 1; swapCount[k] += 1;
         }
     } else{
         // pass
