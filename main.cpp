@@ -9,7 +9,7 @@ const double T = 0.04;
 const int nr = 50;
 
 // Snapshots
-const int dataPoints = 100;
+const int dataPoints = 200;
 
 // Initialization of external variables
 double X[N], Y[N], S[N], X0[N], Y0[N];
