@@ -39,14 +39,16 @@ void MC(std::string out, int ss, int cfgs){
         linPoints[k] = (tau/(cfgs))*k;
     }
     // File writing
-    std::ofstream log_obs, log_cfg, log_ploc, log_p;
+    std::ofstream log_obs, log_cfg, log_ploc, log_p, log_sigma;
     std::string out_cfg = out + "configs/";
-    std::string out_ploc = out + "micro_p/";
-    log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
+    std::string out_ploc = out + "micro_corr/";
+    std::string out_sigma = out + "sigma_scan/";
+    log_obs.open(out + "obs.txt"), log_p.open(out + "space_corr.txt");
     log_obs << std::scientific << std::setprecision(8);
     log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
-    fs::create_directory(out_cfg); fs::create_directory(out_ploc);
+    fs::create_directory(out_cfg); fs::create_directory(out_ploc); 
+    fs::create_directories(out_sigma);
 
     for(int t = 1; t <= steps; t++){
 
@@ -89,17 +91,23 @@ void MC(std::string out, int ss, int cfgs){
                 // looping different eventual tws
                 // Configs
                 log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
-                log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
+                log_ploc.open(out_ploc + "corr_" + std::to_string(t) + ".txt");
+                log_sigma.open(out_sigma + "scan_" + std::to_string(t) + ".txt");
                 log_cfg << std::scientific << std::setprecision(8);
                 log_ploc << std::scientific << std::setprecision(8);
+                log_sigma << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
                     std::vector <double> disp_loc = MicroDispCorrLoc(i);
+                    std::vector <double> u_sigma = SigmaScan(i);
                     log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
                     for (int k=0;k<nr;k++){
                         log_ploc << disp_loc[k] << " ";
                     } log_ploc << std::endl;
+                    for (int k=0;k<ns;k++){
+                        log_sigma << u_sigma[k] << " ";
+                    } log_sigma << std::endl;
                 }
-                log_cfg.close(), log_ploc.close();
+                log_cfg.close(), log_ploc.close(), log_sigma.close();
                 // saving format: timestep Vtot MSD Fs CB 
             }  
         }

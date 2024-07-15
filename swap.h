@@ -21,6 +21,7 @@ extern const int steps; //Monte Carlo sweeps
 extern const double T; //Temperature in units of 1/k_B
 extern const int tw; //Waiting time to start correlation calculations
 extern const int nr; // Number of radius calculations for the correlation lengths
+extern const int ns; // Number of sigma calculations for the energy scan
 
 // Simulation parameters
 const int N = 2000; //Number of particles
@@ -63,7 +64,7 @@ double PairPotential(double x1, double y1, double s1, double x2, double y2, doub
        V(double xj, double yj, double rj, int j);
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
        DispCorrLoc(int j), DispCorr();
-std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr();
+std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr(), SigmaScan(int j);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int ss, int cfgs);
 
 //  Random number between 0 and 1

@@ -7,6 +7,7 @@ const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
 const double T = 0.04; 
 const int nr = 50;
+const int ns = 100;
 
 std::string motherdir = fs::current_path();
 

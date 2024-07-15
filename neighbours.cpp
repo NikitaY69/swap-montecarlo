@@ -8,10 +8,6 @@ double Pshift(double a){
     return a - Size*floor((a+Size/2)/Size);
 }
 
-double Rshift(double a){
-    return a - Size/2;
-}
-
 // Computes the pseudo-interacting neighbours list
 void UpdateNL(){
     NL.clear(); NL = std::vector < std::vector <int> > (N);
