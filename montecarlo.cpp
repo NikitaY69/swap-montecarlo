@@ -108,6 +108,8 @@ void MC(std::string out, int ss, int cfgs){
                     } log_sigma << std::endl;
                 }
                 log_cfg.close(), log_ploc.close(), log_sigma.close();
+                log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
+                    C_sigma() << std::endl;
                 // saving format: timestep Vtot MSD Fs CB 
             }  
         }
