@@ -1,18 +1,18 @@
 #include "swap.h"
 
 // Run parameters
-const int tau = 1000000;
+const int tau = 10000000;
 const int tw = 1;
 const int cycles = 1;
 const int steps = tw*(cycles-1)+tau;
-const double T = 0.04; 
+const double T = 0.025; 
 const int nr = 50;
 const int ns = 100;
 
 std::string motherdir = fs::current_path();
 
 // Snapshots
-const int linPoints = 100;
+const int linPoints = 200;
 const int logPoints = 50;
 
 // Initialization of external variables
