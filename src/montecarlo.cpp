@@ -1,7 +1,7 @@
 #include "swap.h"
 
 double dXCM, dYCM;
-double swapCount[N] = {0};
+// double swapCount[N] = {0};
 
 // Monte Carlo Simulation
 void MC(std::string out, int ss, int cfgs){
@@ -93,23 +93,22 @@ void MC(std::string out, int ss, int cfgs){
                 // Configs
                 log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
                 // log_ploc.open(out_ploc + "corr_" + std::to_string(t) + ".txt");
-                log_sigma.open(out_sigma + "scan_" + std::to_string(t) + ".txt");
+                // log_sigma.open(out_sigma + "scan_" + std::to_string(t) + ".txt");
                 log_cfg << std::scientific << std::setprecision(8);
                 // log_ploc << std::scientific << std::setprecision(8);
-                log_sigma << std::scientific << std::setprecision(8);
+                // log_sigma << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
                     // std::vector <double> disp_loc = MicroDispCorrLoc(i);
                     std::vector <double> u_sigma = SigmaScan(i);
-                    log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " " 
-                            << swapCount[i] << std::endl;
+                    log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
                     // for (int k=0;k<nr;k++){
                     //     log_ploc << disp_loc[k] << " ";
                     // } log_ploc << std::endl;
-                    for (int k=0;k<ns;k++){
-                        log_sigma << u_sigma[k] << " ";
-                    } log_sigma << std::endl;
+                    // for (int k=0;k<ns;k++){
+                    //     log_sigma << u_sigma[k] << " ";
+                    // } log_sigma << std::endl;
                 }
-                log_cfg.close(), log_sigma.close(); // log_ploc;
+                log_cfg.close();//, log_sigma.close(); // log_ploc;
             }  
         }
         if(log>0){ // checking if saving time
@@ -126,8 +125,7 @@ void MC(std::string out, int ss, int cfgs){
                     log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
                     log_cfg << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
-                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << " "
-                        << swapCount[i] << std::endl;
+                        log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
                     }
                     log_cfg.close();
                 } 
@@ -136,8 +134,8 @@ void MC(std::string out, int ss, int cfgs){
                 // for (int k=0;k<nr;k++){
                 //     log_p << disp[k] << " ";
                 // } log_p << std::endl;
-                log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                    C_sigma() << std::endl;
+                log_obs << t << " " << cycle << " " << MSD() << " " <<
+                    CB(cycle) << std::endl;
                 // log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
                 //     MSD() << " " << FS(cycle) << " " << CB(cycle) << std::endl;
                 // saving format: timestep Vtot MSD Fs CB 
@@ -145,7 +143,7 @@ void MC(std::string out, int ss, int cfgs){
         };
         // Doing the MC
         for (int i = 0; i < N; i++){
-            TrySwap(i,floor(ranf()*N));
+            TryDisp(i);
             // if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
             // else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
@@ -187,13 +185,13 @@ void TrySwap(int j, int k){
             double Rnew = S[k];
             S[k] = S[j];
             S[j] = Rnew;
-            swapCount[j] += 1; swapCount[k] += 1;
+            // swapCount[j] += 1; swapCount[k] += 1;
         }
         else if (exp(-deltaE/T) > ranf()){
             double Rnew = S[k];
             S[k] = S[j];
             S[j] = Rnew;
-            swapCount[j] += 1; swapCount[k] += 1;
+            // swapCount[j] += 1; swapCount[k] += 1;
         }
     } else{
         // pass

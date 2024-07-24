@@ -25,7 +25,7 @@ extern const int ns; // Number of sigma calculations for the energy scan
 
 // Simulation parameters
 const int N = 10000; //Number of particles
-const double Size = 100.0;//44.721359550000003; //Size of the system
+const double Size = 100.0; //44.721359550000003; //Size of the system
 const double sigmaMax = 1.613048; //Maximum diameter of particles
 const double rSkin = 1.5; //Radius of neighbours included in NL (e.g. 1.8)
 const double rC = 1.25 * sigmaMax; //Cutoff radius for calculating potential
