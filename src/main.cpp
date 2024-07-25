@@ -1,38 +1,83 @@
 #include "swap.h"
 
-// Run parameters
-const int tau = 10000000;
-const int tw = 1;
-const int cycles = 1;
-const int steps = tw*(cycles-1)+tau;
-const double T = 0.025; 
+// Default run parameters
+int N = 2000;
+double Size = std::sqrt (N);
+double T = 0.04; 
+int tau = 100000;
+int tw = 1;
+int cycles = 1;
+int steps = tw*(cycles-1)+tau;
+int linPoints = 50;
+int logPoints = 50;
 const int nr = 50;
 const int ns = 100;
 
-std::string motherdir = fs::current_path();
+// Setting arrays
+double *X = nullptr, *Y = nullptr, *S = nullptr, *Sref = nullptr, *X0 = nullptr, *Y0 = nullptr;
+double *Xfull = nullptr, *Yfull = nullptr, *Xref = nullptr, *Yref = nullptr;
+std::vector < std::vector <double>> Xtw, Ytw;
+std::vector < std::vector<int> > NL, NN;
+std::vector < std::vector < std::vector <int>>> NN_tw, RL;
 
-// Snapshots
-const int linPoints = 200;
-const int logPoints = 50;
+std::string input;
+std::string outdir;
 
-// Initialization of external variables
-double X[N], Y[N], S[N], X0[N], Y0[N];
-double Xfull[N], Yfull[N], Xref[N], Yref[N], Sref[N];
-std::vector < std::array <double, N>> Xtw, Ytw;
-std::vector < std::vector<int> > NL(N), NN(N);
-std::vector < std::vector < std::vector <int>>> NN_tw;
-std::vector < std::vector < std::vector <int>>> RL(N, std::vector < std::vector <int>>(nr));
 //-----------------------------------------------------------------------------
 //  main.cpp
 int main(int argc, const char * argv[]) {
     
-    // User-defined variables
-    srand(time(NULL)*1.0); //Random number generator
-    std::string input = motherdir + argv[1];
-    std::string outdir = motherdir + argv[2] + "results/";
+    // Random number generator
+    srand(time(NULL)*1.0);
+
+    // Define the command-line options
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help,h", "produce help message")
+        ("input", po::value<std::string>(&input)->required(), "set input file")
+        ("outdir", po::value<std::string>(&outdir)->required(), "set out directory")
+        ("N", po::value<int>(&N)->default_value(N), "set system size")
+        ("T", po::value<double>(&T)->default_value(T), "set temperature")
+        ("tau", po::value<int>(&tau)->default_value(tau), "set single-run time")
+        ("tw", po::value<int>(&tw)->default_value(tw), "set waiting time")
+        ("cycles", po::value<int>(&cycles)->default_value(cycles), "set number of cycles")
+        ("lin", po::value<int>(&linPoints)->default_value(linPoints), "set number of lin-spaced snapshots")
+        ("log", po::value<int>(&logPoints)->default_value(logPoints), "set number of log-spaced snapshots");
+    // std::string input = motherdir + argv[1];
+    // std::string outdir = motherdir + argv[2] + "results/";
+
+    // Parse the command-line arguments
+    po::variables_map vm;
+    try {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+    } catch (const po::error &ex) {
+        std::cerr << ex.what() << std::endl;
+        return 1;
+    }
+    double Size = std::sqrt (N);
+    int steps = tw*(cycles-1)+tau;
+
+    // Handle the help option
+    if (vm.count("help")) {
+        std::cout << desc << std::endl;
+        return 0;
+    }
+
+    // Resizing arrays
+    X = new double[N]; Y = new double[N]; S = new double[N]; Sref = new double[N]; 
+    X0 = new double[N]; Y0 = new double[N];
+    Xfull = new double[N]; Yfull = new double[N]; Xref = new double[N]; Yref = new double[N];
+    // Xtw.resize(cycles, std::vector<double>(N));
+    // Ytw.resize(cycles, std::vector<double>(N));
+    // NL.resize(N, std::vector<int>(N));
+    // NN.resize(N, std::vector<int>(N));
+    // NN_tw.resize(N, std::vector<std::vector<int>>(tw, std::vector<int>(N)));
+    // RL.resize(N, std::vector<std::vector<int>>(nr, std::vector<int>(N)));
+    // creating outdir if not existing
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
-        // creating outdir if not existing
+        
         fs::create_directory(outdir);
     }
     
@@ -63,10 +108,15 @@ int main(int argc, const char * argv[]) {
     }
     UpdateNL(); // First list of neighbours
 
-    // // Do simulation with timer
+    // Do simulation with timer
     double t0 = time(NULL); // Timer
     MC(outdir, logPoints, linPoints); 
     std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
     std::cout << "Done" << std::endl;
+
+    // Freeing allocated memory
+    delete[] X; delete[] Y; delete[] S; delete[] Sref; delete[] X0; delete[] Y0;
+    delete[] Xfull; delete[] Yfull; delete[] Xref; delete[] Yref;
+
     return 0;
 }
