@@ -22,6 +22,7 @@ extern const double T; //Temperature in units of 1/k_B
 extern const int tw; //Waiting time to start correlation calculations
 extern const int nr; // Number of radius calculations for the correlation lengths
 extern const int ns; // Number of sigma calculations for the energy scan
+extern const double p_swap;
 
 // Simulation parameters
 const int N = 10000; //Number of particles
