@@ -24,7 +24,7 @@ extern const int nr; // Number of radius calculations for the correlation length
 
 // Simulation parameters
 const int N = 2000; //Number of particles
-const double Size = 44.721359550000003; //Size of the system
+const double Size = std::sqrt (N); //Size of the system
 const double sigmaMax = 1.613048; //Maximum diameter of particles
 const double rSkin = 1.2; //Radius of neighbours included in NL (e.g. 1.8)
 const double rC = 1.25 * sigmaMax; //Cutoff radius for calculating potential
