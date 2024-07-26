@@ -1,0 +1,12 @@
+name: postproc
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.6
+  - pip
+  - numpy
+  - scipy
+  - f90wrap
+  - matplotlib
+  - jupyter
