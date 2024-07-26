@@ -52,7 +52,7 @@ void MC(std::string out, int ss, int cfgs){
     fs::create_directories(out_sigma);
 
     for(int t = 1; t <= steps; t++){
-
+        std::cout << deltaR2[9401] << std::endl;
         // Updating NL
         if((t-1) % 150 == 0) {//Change number?
             // every 150 steps we check if we need to update the NL
@@ -77,16 +77,16 @@ void MC(std::string out, int ss, int cfgs){
             UpdateAge(cycleCounter); cycleCounter++;
         } 
 
-        // Writing observables to text file
+        // // Writing observables to text file
         int lin = std::count(linPoints, linPoints+cfgs, 1.0*t);
         int log = std::count(samplePoints.begin(), samplePoints.end(), 1.0*t);
         // int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
         if(lin>0){ // checking if saving time
-            UpdateRL(); // updating nearest neighbours
+            // UpdateRL(); // updating nearest neighbours
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
-                double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
-                dXCM += deltaX; dYCM += deltaY;
+                double dX = Xfull[i]-Xref[i], dY = Yfull[i]-Yref[i];
+                dXCM += dX; dYCM += dY;
             } dXCM /= N; dYCM /= N;
             for(int s=0; s<lin; s++){
                 // looping different eventual tws
@@ -112,11 +112,11 @@ void MC(std::string out, int ss, int cfgs){
             }  
         }
         if(log>0){ // checking if saving time
-            UpdateNN(); UpdateRL(); // updating nearest neighbours
+            UpdateNN();// UpdateRL(); // updating nearest neighbours
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
-                double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
-                dXCM += deltaX; dYCM += deltaY;
+                double dX = Xfull[i]-Xref[i], dY = Yfull[i]-Yref[i];
+                dXCM += dX; dYCM += dY;
             } dXCM /= N; dYCM /= N;
             for(int s=0; s<log; s++){
                 // looping different eventual tws
@@ -143,9 +143,9 @@ void MC(std::string out, int ss, int cfgs){
         };
         // Doing the MC
         for (int i = 0; i < N; i++){
-            TryDisp(i);
-            // if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
-            // else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
+            // TryDisp(i);
+            if (ranf() > 0.2) TryDisp(i); //Displacement probability 0.8
+            else TrySwap(i,floor(ranf()*N)); //Swap probability 0.2
         }
 
         if((t-1)%100==0) std::cout << (t-1) << std::endl;; // Counting steps

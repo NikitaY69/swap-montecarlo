@@ -57,7 +57,12 @@ int main(int argc, const char * argv[]) {
     }
     double Size = std::sqrt (N);
     int steps = tw*(cycles-1)+tau;
-
+    std::cout << "N" << " " << "Size" << " " << "T" << " " << "tau" << " " << "tw" << " "
+              << "cycles" << " " << "steps" << " " << "linPoints" << " " << "logPoints" << " "
+              << std::endl;
+    std::cout << N << " " << Size << " " << T << " " << tau << " " << tw << " "
+              << cycles << " " << steps << " " << linPoints << " " << logPoints << " "
+              << std::endl;
     // Handle the help option
     if (vm.count("help")) {
         std::cout << desc << std::endl;
