@@ -6,7 +6,7 @@ import pprint
 class RunsFactory():
     def __init__(self, root):
         '''
-        This class helps managing with runs generated from the SMC module.
+        This class helps managing runs generated from the SMC module.
         The database is constructed upon 7 tables: 
         rootdir, algorithm, N, T, steps, linPoints and logPoints
         '''
@@ -38,7 +38,9 @@ class RunsFactory():
             pkl.dump(self.db, db)
 
     # def get_index(self, params):
-
+    def show(self):
+        pprint.pprint(self.db)
+        
     def set_run(self, idx):
         self.run = self.db[idx]
         print(f'Database now pointing at run {idx} with params:')
