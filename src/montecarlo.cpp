@@ -52,7 +52,6 @@ void MC(std::string out, int ss, int cfgs){
     fs::create_directories(out_sigma);
 
     for(int t = 1; t <= steps; t++){
-        std::cout << deltaR2[9401] << std::endl;
         // Updating NL
         if((t-1) % 150 == 0) {//Change number?
             // every 150 steps we check if we need to update the NL

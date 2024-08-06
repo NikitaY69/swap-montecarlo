@@ -1,7 +1,7 @@
 #include "swap.h"
 
 // Default run parameters
-int N = 2000;
+int N = 5;
 double Size = std::sqrt (N);
 double T = 0.04; 
 int tau = 100000;
@@ -55,8 +55,8 @@ int main(int argc, const char * argv[]) {
         std::cerr << ex.what() << std::endl;
         return 1;
     }
-    double Size = std::sqrt (N);
-    int steps = tw*(cycles-1)+tau;
+    Size = std::sqrt (N);
+    steps = tw*(cycles-1)+tau;
     std::cout << "N" << " " << "Size" << " " << "T" << " " << "tau" << " " << "tw" << " "
               << "cycles" << " " << "steps" << " " << "linPoints" << " " << "logPoints" << " "
               << std::endl;
@@ -73,12 +73,14 @@ int main(int argc, const char * argv[]) {
     X = new double[N]; Y = new double[N]; S = new double[N]; Sref = new double[N]; 
     X0 = new double[N]; Y0 = new double[N];
     Xfull = new double[N]; Yfull = new double[N]; Xref = new double[N]; Yref = new double[N];
+
     // Xtw.resize(cycles, std::vector<double>(N));
     // Ytw.resize(cycles, std::vector<double>(N));
     // NL.resize(N, std::vector<int>(N));
     // NN.resize(N, std::vector<int>(N));
     // NN_tw.resize(N, std::vector<std::vector<int>>(tw, std::vector<int>(N)));
     // RL.resize(N, std::vector<std::vector<int>>(nr, std::vector<int>(N)));
+
     // creating outdir if not existing
     fs::path out_path = outdir;
     if(!fs::is_directory(out_path)){
@@ -100,7 +102,7 @@ int main(int argc, const char * argv[]) {
             while (ss >> value){
                 cfg[i].push_back(value);
             }
-            S[i] = cfg[i][0]; X[i] = Pshift(cfg[i][1]); Y[i] = Pshift(cfg[i][2]);
+            S[i] = cfg[i][0]; X[i] = cfg[i][1]; Y[i] = cfg[i][2];
             X0[i] = X[i]; Xfull[i] = X[i]; Xref[i] = X[i]; 
             Y0[i] = Y[i]; Yfull[i] = Y[i]; Yref[i] = Y[i];
             Sref[i] = S[i];
