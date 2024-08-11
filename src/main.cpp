@@ -57,14 +57,6 @@ int main(int argc, const char * argv[]) {
         std::cerr << ex.what() << std::endl;
         return 1;
     }
-    Size = std::sqrt (N);
-    steps = tw*(cycles-1)+tau;
-    std::cout << "N" << " " << "Size" << " " << "T" << " " << "tau" << " " << "tw" << " "
-              << "cycles" << " " << "steps" << " " << "linPoints" << " " << "logPoints" << " "
-              << std::endl;
-    std::cout << N << " " << Size << " " << T << " " << tau << " " << tw << " "
-              << cycles << " " << steps << " " << linPoints << " " << logPoints << " "
-              << std::endl;
     // Handle the help option
     if (vm.count("help")) {
         std::cout << desc << std::endl;
@@ -72,6 +64,8 @@ int main(int argc, const char * argv[]) {
     }
 
     // Resizing arrays
+    Size = std::sqrt (N);
+    steps = tw*(cycles-1)+tau;
     X = new double[N]; Y = new double[N]; S = new double[N]; Sref = new double[N]; 
     X0 = new double[N]; Y0 = new double[N];
     Xfull = new double[N]; Yfull = new double[N]; Xref = new double[N]; Yref = new double[N];
@@ -90,6 +84,18 @@ int main(int argc, const char * argv[]) {
         fs::create_directory(outdir);
     }
     
+     // Writing params.txt file
+    std::ofstream params;
+    params.open(outdir + "params.txt");
+    std::string algo;
+    if (p_swap==0) algo = "SWAP"; else algo = "MC";
+    
+    params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "Size" << " " 
+           << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints" << std::endl;
+    params << outdir << " " << algo << " " << N << " " << Size << " " << T << " "
+              << steps << " " << linPoints << " " << logPoints << std::endl;
+    params.close();
+
     // Read init config
     std::string line;
     std::ifstream input_file(input);
