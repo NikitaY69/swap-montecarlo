@@ -24,6 +24,7 @@ extern int cycles; //Number of correlation cycles
 extern int steps; //Monte Carlo sweeps
 extern double T; //Temperature in units of 1/k_B
 extern int tw; //Waiting time to start correlation calculations
+extern double p_swap; //Swap-attempt probability
 extern const int nr; // Number of radius calculations for the correlation lengths
 extern const int ns; // Number of sigma calculations for the energy scan
 

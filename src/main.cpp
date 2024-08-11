@@ -10,6 +10,7 @@ int cycles = 1;
 int steps = tw*(cycles-1)+tau;
 int linPoints = 50;
 int logPoints = 50;
+double p_swap = 0.2;
 const int nr = 50;
 const int ns = 100;
 
@@ -42,7 +43,8 @@ int main(int argc, const char * argv[]) {
         ("tw", po::value<int>(&tw)->default_value(tw), "set waiting time")
         ("cycles", po::value<int>(&cycles)->default_value(cycles), "set number of cycles")
         ("lin", po::value<int>(&linPoints)->default_value(linPoints), "set number of lin-spaced snapshots")
-        ("log", po::value<int>(&logPoints)->default_value(logPoints), "set number of log-spaced snapshots");
+        ("log", po::value<int>(&logPoints)->default_value(logPoints), "set number of log-spaced snapshots")
+        ("log", po::value<double>(&p_swap)->default_value(p_swap), "set swap-attempt probability");
     // std::string input = motherdir + argv[1];
     // std::string outdir = motherdir + argv[2] + "results/";
 
