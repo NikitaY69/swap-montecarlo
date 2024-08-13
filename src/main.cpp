@@ -44,7 +44,7 @@ int main(int argc, const char * argv[]) {
         ("cycles", po::value<int>(&cycles)->default_value(cycles), "set number of cycles")
         ("lin", po::value<int>(&linPoints)->default_value(linPoints), "set number of lin-spaced snapshots")
         ("log", po::value<int>(&logPoints)->default_value(logPoints), "set number of log-spaced snapshots")
-        ("log", po::value<double>(&p_swap)->default_value(p_swap), "set swap-attempt probability");
+        ("p_swap", po::value<double>(&p_swap)->default_value(p_swap), "set swap-attempt probability");
     // std::string input = motherdir + argv[1];
     // std::string outdir = motherdir + argv[2] + "results/";
 
@@ -88,8 +88,7 @@ int main(int argc, const char * argv[]) {
     std::ofstream params;
     params.open(outdir + "params.txt");
     std::string algo;
-    if (p_swap==0) algo = "SWAP"; else algo = "MC";
-    
+    if (p_swap==0) algo = "MC"; else algo = "SWAP";
     params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "Size" << " " 
            << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints" << std::endl;
     params << outdir << " " << algo << " " << N << " " << Size << " " << T << " "
