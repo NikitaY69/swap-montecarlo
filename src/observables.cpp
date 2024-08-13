@@ -172,3 +172,9 @@ void UpdateAge(int cycle){
         Ytw[cycle].push_back(Yfull[i]);
     }
 }
+
+double whichObs(int idx){
+    if (idx == 0){
+        
+    }
+}

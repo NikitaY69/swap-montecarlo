@@ -20,6 +20,7 @@ double *Xfull = nullptr, *Yfull = nullptr, *Xref = nullptr, *Yref = nullptr;
 std::vector < std::vector <double>> Xtw, Ytw;
 std::vector < std::vector<int> > NL, NN;
 std::vector < std::vector < std::vector <int>>> NN_tw, RL;
+std::vector <std::pair <std::string, int>> obsOrder;
 
 std::string input;
 std::string outdir;
@@ -44,7 +45,11 @@ int main(int argc, const char * argv[]) {
         ("cycles", po::value<int>(&cycles)->default_value(cycles), "set number of cycles")
         ("lin", po::value<int>(&linPoints)->default_value(linPoints), "set number of lin-spaced snapshots")
         ("log", po::value<int>(&logPoints)->default_value(logPoints), "set number of log-spaced snapshots")
-        ("p_swap", po::value<double>(&p_swap)->default_value(p_swap), "set swap-attempt probability");
+        ("p_swap", po::value<double>(&p_swap)->default_value(p_swap), "set swap-attempt probability")
+        ("MSD", "Flag to compute MSD")
+        ("Cb", "Flag to compute Cb")
+        ("Fs", "Flag to compute Fs")
+        ("U", "Flag to compute U");
     // std::string input = motherdir + argv[1];
     // std::string outdir = motherdir + argv[2] + "results/";
 
@@ -61,6 +66,21 @@ int main(int argc, const char * argv[]) {
     if (vm.count("help")) {
         std::cout << desc << std::endl;
         return 0;
+    }
+
+    // Parsing the observables in order of appearance
+    int index = 2; // index starts at 2 because 0 and 1 are saved for timesteps
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--MSD") {
+            obsOrder.emplace_back("MSD", index++);
+        } else if (arg == "--Cb") {
+            obsOrder.emplace_back("Cb", index++);
+        } else if (arg == "--Fs") {
+            obsOrder.emplace_back("Fs", index++);
+        } else if (arg == "--U") {
+            obsOrder.emplace_back("U", index++);
+        }
     }
 
     // Resizing arrays
@@ -90,9 +110,15 @@ int main(int argc, const char * argv[]) {
     std::string algo;
     if (p_swap==0) algo = "MC"; else algo = "SWAP";
     params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "Size" << " " 
-           << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints" << std::endl;
+           << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints";
+    for (const auto& obs: obsOrder){
+        params << " " << obs.first;
+    } params << std::endl;
     params << outdir << " " << algo << " " << N << " " << Size << " " << T << " "
-              << steps << " " << linPoints << " " << logPoints << std::endl;
+              << steps << " " << linPoints << " " << logPoints;
+    for (const auto& obs: obsOrder){
+        params << " " << obs.second;
+    } params << std::endl;
     params.close();
 
     // Read init config

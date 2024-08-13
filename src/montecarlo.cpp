@@ -1,20 +1,21 @@
 #include "swap.h"
 
 double dXCM, dYCM;
+int cycle = 0;
 // double swapCount[N] = {0};
 
 // Monte Carlo Simulation
-void MC(std::string out, int ss, int cfgs){
-    int cycle = 0, cycleCounter = 0;
+void MC(std::string out, int n_log, int n_lin){
+    int cycleCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     // Building snapshots list (log-spaced)
     std::vector < std::pair <double, double>> pairs;
     std::vector <double> samplePoints, twPoints;
-    double endingPoints[cycles], linPoints[cfgs];
-    double exponents = log10(tau)/(ss-1);
+    double endingPoints[cycles], linPoints[n_lin];
+    double exponents = log10(tau)/(n_log-1);
 
     for(int c=0; c<cycles; c++){
-        for (int x = 0; x < ss; x++){
+        for (int x = 0; x < n_log; x++){
             double value = tw*c + floor(pow(10,exponents*(x)));
             std::pair <double,double> p = {value, c};
             int f = std::count(pairs.begin(), pairs.end(), p);
@@ -36,20 +37,24 @@ void MC(std::string out, int ss, int cfgs){
         endingPoints[c] = c*tw + tau;
     }
     // Linspaced points
-    for (int k=1;k<=cfgs;k++){
-        linPoints[k] = (tau/(cfgs))*k;
+    for (int k=1;k<=n_lin;k++){
+        linPoints[k] = (tau/(n_lin))*k;
     }
     // File writing
-    std::ofstream log_obs, log_cfg, log_ploc, log_p, log_sigma;
+    std::ofstream log_obs, log_cfg; 
+    // log_ploc, log_p;
+    // log_sigma;
     std::string out_cfg = out + "configs/";
-    std::string out_ploc = out + "micro_corr/";
-    std::string out_sigma = out + "sigma_scan/";
-    log_obs.open(out + "obs.txt"), log_p.open(out + "space_corr.txt");
+    // std::string out_ploc = out + "micro_corr/";
+    // std::string out_sigma = out + "sigma_scan/";
+    log_obs.open(out + "obs.txt");
+    // log_p.open(out + "space_corr.txt");
     log_obs << std::scientific << std::setprecision(8);
-    log_p << std::scientific << std::setprecision(8);
+    // log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
-    fs::create_directory(out_cfg); fs::create_directory(out_ploc); 
-    fs::create_directories(out_sigma);
+    fs::create_directory(out_cfg); 
+    // fs::create_directory(out_ploc);
+    // fs::create_directories(out_sigma); 
 
     for(int t = 1; t <= steps; t++){
         // Updating NL
@@ -77,7 +82,7 @@ void MC(std::string out, int ss, int cfgs){
         } 
 
         // // Writing observables to text file
-        int lin = std::count(linPoints, linPoints+cfgs, 1.0*t);
+        int lin = std::count(linPoints, linPoints+n_lin, 1.0*t);
         int log = std::count(samplePoints.begin(), samplePoints.end(), 1.0*t);
         // int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
         if(lin>0){ // checking if saving time
@@ -98,7 +103,7 @@ void MC(std::string out, int ss, int cfgs){
                 // log_sigma << std::scientific << std::setprecision(8);
                 for (int i = 0; i<N; i++){
                     // std::vector <double> disp_loc = MicroDispCorrLoc(i);
-                    std::vector <double> u_sigma = SigmaScan(i);
+                    // std::vector <double> u_sigma = SigmaScan(i);
                     log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
                     // for (int k=0;k<nr;k++){
                     //     log_ploc << disp_loc[k] << " ";
@@ -107,11 +112,13 @@ void MC(std::string out, int ss, int cfgs){
                     //     log_sigma << u_sigma[k] << " ";
                     // } log_sigma << std::endl;
                 }
-                log_cfg.close();//, log_sigma.close(); // log_ploc;
+                log_cfg.close();
+                //, log_sigma.close(); // log_ploc;
             }  
         }
         if(log>0){ // checking if saving time
-            UpdateNN();// UpdateRL(); // updating nearest neighbours
+            UpdateNN(); // updating nearest neighbours
+            // UpdateRL(); // updating per-radius neighbour-list
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
                 double dX = Xfull[i]-Xref[i], dY = Yfull[i]-Yref[i];
@@ -133,11 +140,10 @@ void MC(std::string out, int ss, int cfgs){
                 // for (int k=0;k<nr;k++){
                 //     log_p << disp[k] << " ";
                 // } log_p << std::endl;
-                log_obs << t << " " << cycle << " " << MSD() << " " <<
-                    CB(cycle) << std::endl;
-                // log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                //     MSD() << " " << FS(cycle) << " " << CB(cycle) << std::endl;
-                // saving format: timestep Vtot MSD Fs CB 
+                log_obs << t << " " << cycle;
+                for (const auto& obs: obsOrder){
+                    log_obs << " " << whichObs(obs.first);
+                } log_obs << std::endl;
             }  
         };
         // Doing the MC
@@ -149,7 +155,8 @@ void MC(std::string out, int ss, int cfgs){
 
         if((t-1)%100==0) std::cout << (t-1) << std::endl;; // Counting steps
     };
-    log_obs.close(), log_p.close();
+    log_obs.close();
+    // log_p.close();
 }
 
 //  Tries displacing one particle j by vector dr = (dx, dy)
@@ -195,4 +202,11 @@ void TrySwap(int j, int k){
     } else{
         // pass
     }
+}
+
+double whichObs(std::string obs){
+    if (obs=="MSD") return MSD();
+    else if (obs=="U") return VTotal()/(2*N);
+    else if (obs=="Cb") return CB(cycle);
+    else if (obs=="Fs") return FS(cycle);
 }
