@@ -79,8 +79,8 @@ void MC(std::string out, int ss){
             UpdateNN(); // updating nearest neighbours
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
-                double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
-                dXCM += deltaX; dYCM += deltaY;
+                double dX = Xfull[i]-Xref[i], dY = Yfull[i]-Yref[i];
+                dXCM += dX; dYCM += dY;
             } dXCM /= N; dYCM /= N;
             for(int s=0; s<f; s++){
                 // looping different eventual tws
@@ -96,7 +96,7 @@ void MC(std::string out, int ss){
                     
                 } else{
                     log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                    FS(cycle) << " " << CB(cycle) << std::endl;
+                    MSD() << " " << FS(cycle) << " " << CB(cycle) << std::endl;
                     // saving format: timestep Fs CB 
                 }
                 dataCounter++;
