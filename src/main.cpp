@@ -13,6 +13,7 @@ int logPoints = 50;
 double p_swap = 0.2;
 const int nr = 50;
 const int ns = 100;
+const double p_swap = 0.2;
 
 // Setting arrays
 double *X = nullptr, *Y = nullptr, *S = nullptr, *Sref = nullptr, *X0 = nullptr, *Y0 = nullptr;

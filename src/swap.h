@@ -27,6 +27,7 @@ extern int tw; //Waiting time to start correlation calculations
 extern double p_swap; //Swap-attempt probability
 extern const int nr; // Number of radius calculations for the correlation lengths
 extern const int ns; // Number of sigma calculations for the energy scan
+extern const double p_swap;
 
 // Model parameters
 extern double Size; //44.721359550000003; //Size of the system
