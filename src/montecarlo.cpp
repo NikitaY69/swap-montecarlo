@@ -39,14 +39,12 @@ void MC(std::string out, int ss){
         linPoints[k] = (tau/(ss))*k;
     }
     // File writing
-    std::ofstream log_obs, log_cfg, log_ploc, log_p;
+    std::ofstream log_obs, log_cfg;
     std::string out_cfg = out + "configs/";
-    std::string out_ploc = out + "micro_p/";
-    log_obs.open(out + "obs.txt"), log_p.open(out + "products.txt");
+    log_obs.open(out + "obs.txt");
     log_obs << std::scientific << std::setprecision(8);
-    log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
-    fs::create_directory(out_cfg); fs::create_directory(out_ploc);
+    fs::create_directory(out_cfg);
 
     for(int t = 1; t <= steps; t++){
 
@@ -78,7 +76,7 @@ void MC(std::string out, int ss){
         int f = std::count(linPoints, linPoints+ss, 1.0*t);
         // int f = std::count(samplePoints.begin(), samplePoints.end(), t*1.0);
         if(f>0){ // checking if saving time
-            UpdateNN(); UpdateRL(); // updating nearest neighbours
+            UpdateNN(); // updating nearest neighbours
             dXCM = 0; dYCM = 0;
             for (int i=0;i<N;i++){
                 double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
@@ -90,24 +88,11 @@ void MC(std::string out, int ss){
                 if(cycles == 1){
                     // Configs
                     log_cfg.open(out_cfg + "cfg_" + std::to_string(t) + ".xy");
-                    log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
                     log_cfg << std::scientific << std::setprecision(8);
-                    log_ploc << std::scientific << std::setprecision(8);
                     for (int i = 0; i<N; i++){
-                        std::vector <double> disp_loc = MicroDispCorrLoc(i);
                         log_cfg << S[i] << " " << Xfull[i] << " " << Yfull[i] << std::endl;
-                        for (int k=0;k<nr;k++){
-                            log_ploc << disp_loc[k] << " ";
-                        } log_ploc << DispCorrLoc(i) << std::endl;
                     }
-                    log_cfg.close(), log_ploc.close();
-                    log_obs << t << " " << MSD() << " " << DispCorr() << " "<< std::endl;
-                    log_p << t << " ";
-                    std::vector <double> disp = MicroDispCorr();
-                    for (int k=0;k<nr;k++){
-                            log_p << disp[k] << " ";
-                        } log_p << std::endl;
-                    // saving format: timestep Vtot MSD Fs CB 
+                    log_cfg.close();
                     
                 } else{
                     log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
@@ -133,7 +118,7 @@ void MC(std::string out, int ss){
 
         if((t-1)%100==0) std::cout << (t-1) << std::endl;; // Counting steps
     };
-    log_obs.close(), log_p.close();
+    log_obs.close();
 }
 
 //  Tries displacing one particle j by vector dr = (dx, dy)
