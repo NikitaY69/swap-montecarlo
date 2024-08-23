@@ -13,7 +13,7 @@ import numpy as np
 db = RunsFactory('test.pkl')
 # db.show()
 db.insert('/home/allaglo/production/IS/T0.04_SWAP/run_601/results')
-db.set_run(0)
+# db.set_run(0)
 db.show()
 # obs = Observables('test.pkl')
 # obs.set_ensemble([0])

@@ -109,7 +109,7 @@ int main(int argc, const char * argv[]) {
     params.open(outdir + "params.txt");
     std::string algo;
     if (p_swap==0) algo = "MC"; else algo = "SWAP";
-    params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "Size" << " " 
+    params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "size" << " " 
            << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints";
     for (const auto& obs: obsOrder){
         params << " " << obs.first;
