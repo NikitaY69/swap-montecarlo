@@ -3,6 +3,7 @@ import pandas as pd
 import pickle as pkl
 import pprint
 from colorama import Fore, Style
+import os 
 
 class RunsFactory():
     def __init__(self, root):
@@ -15,14 +16,15 @@ class RunsFactory():
         try:
             self.load(root)
         except FileNotFoundError:
-            print(f'Root does not exist. {Fore.GREEN}Create new DB with {Fore.CYAN}self.insert{Style.RESET_ALL}')
+            print(f'Root does not exist. {Fore.GREEN}Create new DB with ' + \
+                  f'{Fore.CYAN}self.insert{Style.RESET_ALL}')
             self.db = []
 
     def load(self, root):
         self.db = pkl.load(open(root, 'rb'))
+        self.show()
 
     def insert(self, rootdir, index=-1):
-    
         # reading params values
         params = self.read_params(rootdir)
         if params in self.db:
@@ -42,7 +44,8 @@ class RunsFactory():
                 if modify == 'Y':
                     self.db[index] = params
             else:
-                print(f'{Fore.GREEN}CREATING new run at index {Fore.RED}{len(self.db)}{Style.RESET_ALL} with parameters:')
+                print(f'{Fore.GREEN}CREATING new run at index ' + 
+                      f'{Fore.RED}{len(self.db)}{Fore.GREEN} with parameters:{Style.RESET_ALL}')
                 self.pprint(params)
                 self.db.append({})
                 self.db[-1] = params
@@ -74,6 +77,12 @@ class RunsFactory():
 
     @staticmethod
     def read_params(rootdir):
-        params = pd.read_csv(f'{rootdir}/params.txt', delim_whitespace=True)
-        return params.iloc[0].to_dict()
-        # add error if doesn't follow smc module out format
+        if os.path.exists(rootdir):
+            try:
+                params = pd.read_csv(f'{rootdir}/params.txt', delim_whitespace=True)
+                return params.iloc[0].to_dict()
+            except FileNotFoundError:
+                raise FileNotFoundError(f"There is no {Fore.CYAN}params.txt{Style.RESET_ALL} " + 
+                                        f"file in '{rootdir}'")
+        else:
+            raise FileNotFoundError(f"{Fore.YELLOW}{rootdir}{Style.RESET_ALL} does not exist.")
