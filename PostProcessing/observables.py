@@ -1,32 +1,44 @@
 from smc_db import RunsFactory
 import numpy as np
+from colorama import Fore, Style
 
 class Observables(RunsFactory):
-    def __init__(self, root):
+    def __init__(self, root, ensemble='all'):
         '''
         This class computes ensemble observables given a database
         '''
         RunsFactory.__init__(self, root)
-        # self.get_ensemble(self, params)
-        self.set_run(self.ensemble[0]) # setting first run to define some params
-        self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False)
-        self.lin_ts[0] += 1
-        self.log_ts = np.unique(np.logspace(0, self.run['steps'], self.run['logPoints']), dtype=int)
+        self.set_ensemble(ensemble)
 
     def compute_average(self, obs, log=True):
         if log:
-            self.ts = self.lin_ts
-        else:
             self.ts = self.log_ts
+        else:
+            self.ts = self.lin_ts
         obs_ = np.empty(shape=(len(self.ensemble), len(self.ts)))
         for i, run in enumerate(self.ensemble):
-            obs_[i] = np.genfromtxt(f'{run['rootdir']}/obs.txt', delimiter='', \
+            obs_[i] = np.genfromtxt(f'{run["rootdir"]}/obs.txt', delimiter='', \
                                     usecols=[run[obs]])
         
         return np.mean(obs_, axis=0)
 
-    def set_ensemble(self, idx):
-        self.ensemble = self.db[idx]
+    def set_ensemble(self, idx='all'):
+        '''
+        Defining ensemble over which observables are averaged.
+        '''
+        self.ensemble = np.array(self.db, dtype=dict)
+        if type(idx) is int:
+            raise IndexError(f'When retrieving single-run observables, ' +
+                             f'you must still provide the index in a list, '+
+                             f'ie {Fore.CYAN}[0]{Style.RESET_ALL} instead of {Fore.RED}0{Style.RESET_ALL}.')
+        if idx != 'all':
+            self.ensemble = self.ensemble[idx]
+        dummy = self.db[0]
+        
+        # Timesteps 
+        self.lin_ts = np.linspace(0, dummy['steps'], dummy['linPoints'], endpoint=False)
+        self.lin_ts[0] += 1
+        self.log_ts = np.unique(np.logspace(0, np.log10(dummy['steps']), dummy['logPoints'], dtype=int))
 
-    def get_ensemble(self, params):
-        return None
+    # def get_ensemble(self, params):
+    #     return None

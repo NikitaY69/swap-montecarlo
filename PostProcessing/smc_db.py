@@ -63,11 +63,6 @@ class RunsFactory():
             self.pprint(run)
             print(f'{Fore.RED}····································································\
                     {Style.RESET_ALL}')
-            
-    # def set_run(self, idx):
-    #     self.run = self.db[idx]
-    #     print(f'Database now pointing at run {Fore.RED}{idx}{Style.RESET_ALL} with params:')
-    #     pprint.pprint([self.db[idx]])
 
     @staticmethod
     def pprint(dic):

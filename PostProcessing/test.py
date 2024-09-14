@@ -1,6 +1,6 @@
 from smc_db import RunsFactory
 from modes import SoftModes
-# from observables import Observables
+from observables import Observables
 from soft_spot_project.visualization_tools import render_snapshot,render_field
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -11,15 +11,14 @@ mpl.use('Agg')
 import numpy as np
 
 db = RunsFactory('test.pkl')
-# db.show()
-db.insert('/home/allaglo/production/IS/T0.04_SWAP/run_601/results')
-# db.set_run(0)
 db.show()
-# obs = Observables('test.pkl')
+db.insert('/home/allaglo/production/IS/T0.04_SWAP/run_601/results')
+db.set_run(0)
+db.show()
+obs = Observables('test.pkl')
 # obs.set_ensemble([0])
-# print(obs.lin_ts)
-# MSD = obs.compute_average('MSD')
-# print(MSD)
+MSD = obs.compute_average('MSD')
+print(MSD)
 
 # PH_modes = SoftModes('test.pkl', 0, 1)
 # freq, modes, PR = PH_modes.get_modes(n=10)
