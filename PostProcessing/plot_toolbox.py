@@ -27,7 +27,6 @@ class PlotToolBox(RunsFactory):
         self.N = self.run["N"]
         self.L = np.sqrt(self.N)/2
         self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False)
-        print(self.lin_ts)
         self.lin_ts[0] += 1
         self.log_ts = np.unique(np.logspace(0, np.log10(self.run['steps']), self.run['logPoints'], dtype=int))
         self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize, fontsize, linewidth, facecolor, cbar)
@@ -62,22 +61,25 @@ class PlotToolBox(RunsFactory):
         if particles:
             self.c0 = self.load_cfg(t=1)
             x, y, r = self.c0; x_box, y_box = [self.Pshift(a) for a in [x, y]]
-            self.particles = [Circle((x_box[i], y_box[i]), r[i], facecolor=c_p, edgecolor='k', linewidth=lw_p) for i in range(self.N)]
+            dX, dY = [[0]*self.N for _ in range(2)]
+            self.particles = [Circle((x_box[i], y_box[i]), r[i], facecolor=c_p, linewidth=lw_p, alpha=alpha_p) for i in range(self.N)]
             self.collection = PatchCollection(self.particles, match_original=True)
             self.ax.add_collection(self.collection)
             # scat = self.ax.scatter([], [], s=[], color=c_p, alpha=alpha_p, linewidths=lw_p)
         if disp_field:
-            self.quiv = self.ax.quiver(np.empty(shape=(self.N)), np.empty(shape=(self.N)), # XY\ 
-                                  np.empty(shape=(self.N)), np.empty(shape=(self.N)), # UV\
-                                  np.empty(shape=(self.N)), # C\
+            self.quiv = self.ax.quiver(x_box, y_box, # XY\ 
+                                  dX, dY, # UV\
+                                  np.hypot(dX, dY), # C\
                                   cmap=cmap_f, scale=scale, scale_units='xy', angles='xy', \
                                   width=width, headwidth=headwidth, headlength=headlength, headaxislength=headaxislength)
         self.ax.set_xlim([-self.L, self.L])
         self.ax.set_ylim([-self.L, self.L])
 
-    def render_stuff(self, t, particles=False, disp_field=False, C_p=False, C_f=False, **kwargs):
-        self.init_fig(particles, disp_field, **kwargs)
-        self.ax.set_title(f"t={t}")
+    def render_stuff(self, t, particles=False, disp_field=False, C_p=False, **kwargs):
+        if t != 1:
+            self.ax.set_title(f"t={t}")
+        else:
+            self.ax.set_title(f"t=0")
         x, y, r = self.load_cfg(t)
         x_box, y_box = [self.Pshift(a) for a in [x,y]]
         if particles:
@@ -89,13 +91,17 @@ class PlotToolBox(RunsFactory):
         if disp_field:
             dX = x - self.c0[0]
             dY = y - self.c0[1]
+            dR = np.hypot(dX, dY)
             xy = np.vstack((x_box, y_box)).T
             self.quiv.set_offsets(xy)
-            self.quiv.set_UVC(dX, dY, C_f)
-        
+            self.quiv.set_UVC(dX, dY, np.hypot(dX, dY))
+            self.quiv.norm.vmin = dR.min()
+            self.quiv.norm.vmax = dR.max()
+
         return self.collection, self.quiv,
 
     def movie(self, save, log=False, n_frames = 'all', fps=8, interval=50, **kwargs):
+        self.init_fig(**kwargs)
         if not log:
             ts = self.lin_ts
         else:
