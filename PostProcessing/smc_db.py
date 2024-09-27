@@ -64,6 +64,12 @@ class RunsFactory():
             print(f'{Fore.RED}····································································\
                     {Style.RESET_ALL}')
 
+    def get_observable(self):
+        return None
+    
+    def get_cfg(self):
+        return None
+    
     @staticmethod
     def pprint(dic):
         key_order = ['rootdir', 'algorithm', 'N', 'T', 'steps', 'linPoints', 'logPoints']
