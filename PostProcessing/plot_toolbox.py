@@ -12,7 +12,7 @@ from smc_db import RunsFactory
 from colorama import Fore, Style
 
 class PlotToolBox(RunsFactory):
-    def __init__(self, root, idx=False, figsize=(7,7), fontsize=20, linewidth=2.5, facecolor='black', cbar=True):
+    def __init__(self, root, idx=False, figsize=(7,7), facecolor='black', cbar=True):
         '''
         This class gives tools to plot various quantities (observables aside) 
         of interest in the context of SMC runs.
@@ -29,11 +29,11 @@ class PlotToolBox(RunsFactory):
         self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False, dtype=int)
         self.lin_ts[0] += 1
         self.log_ts = np.unique(np.logspace(0, np.log10(self.run['steps']), self.run['logPoints'], dtype=int))
-        self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize, fontsize, linewidth, facecolor, cbar)
+        self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize=figsize, facecolor=facecolor, cbar=cbar)
         self.multi_render = False
 
     @staticmethod
-    def make_canvas(figsize=(7,7), fontsize=20, linewidth=2.5, facecolor='black', cbar=True):
+    def make_canvas(figsize=(7,7), fontsize=15, linewidth=2.5, facecolor='black', cbar=True):
         # Plot params
         plt.rcParams['figure.figsize'] = figsize
         plt.rcParams['font.size'] = fontsize
@@ -51,10 +51,21 @@ class PlotToolBox(RunsFactory):
 
         return fig, ax, cbar_ax
 
-    def init_fig(self, particles=False, disp_field=False, \
-                 c_p='grey', alpha_p=0.4, lw_p=0.5, \
-                 cmap_f='jet', scale=1, width=0.00375/1.5, headwidth=2.5, headlength=2.5, headaxislength=2.5):
-        # Ici plutôt créer des dictionnaires de keywords pour chaque champ
+    def init_fig(self, particles, disp_field, plot_params):
+        # Set the particle-related parameters using .get() to allow defaults
+        c_p = plot_params.get('c_p', 'grey')
+        cmap_p = plot_params.get('cmap_p', 'Blues')
+        alpha_p = plot_params.get('alpha_p', 0.4)
+        lw_p = plot_params.get('lw_p', 0.5)
+        
+        # Set the field-related parameters using .get() to allow defaults
+        cmap_f = plot_params.get('cmap_f', 'jet')
+        scale = plot_params.get('scale', 1)
+        width = plot_params.get('width', 0.00375 / 1.5)
+        headwidth = plot_params.get('headwidth', 2.5)
+        headlength = plot_params.get('headlength', 2.5)
+        headaxislength = plot_params.get('headaxislength', 2.5)
+
         if not particles and not disp_field:
             raise NotImplementedError(f'{Fore.YELLOW}You are asking me to do nothing...{Style.RESET_ALL}\n' + 
                                       f'You need to set at least one plot, ' + 
@@ -64,10 +75,10 @@ class PlotToolBox(RunsFactory):
             x, y, r = self.c0; x_box, y_box = [self.Pshift(a) for a in [x, y]]
             dX, dY = [[0]*self.N for _ in range(2)]
             if self.cbar_ax == None:
-                self.particles = [Circle((x_box[i], y_box[i]), r[i], facecolor=c_p, linewidth=lw_p, alpha=alpha_p) for i in range(self.N)]
+                self.particles = [Circle((x_box[i], y_box[i]), r[i], facecolor=c_p, linewidth=lw_p, alpha=alpha_p, clip_on=False) for i in range(self.N)]
                 self.collection = PatchCollection(self.particles, match_original=True)
             else:
-                self.particles = [Circle((x_box[i], y_box[i]), r[i], linewidth=lw_p, alpha=alpha_p) for i in range(self.N)]
+                self.particles = [Circle((x_box[i], y_box[i]), r[i], linewidth=lw_p, alpha=alpha_p, clip_on=False) for i in range(self.N)]
                 self.collection = PatchCollection(self.particles, cmap=c_p, match_original=True)
             self.ax.add_collection(self.collection)
             # scat = self.ax.scatter([], [], s=[], color=c_p, alpha=alpha_p, linewidths=lw_p)
@@ -80,9 +91,9 @@ class PlotToolBox(RunsFactory):
         self.ax.set_xlim([-self.L, self.L])
         self.ax.set_ylim([-self.L, self.L])
 
-    def render_stuff(self, t, particles=False, disp_field=False, A_p=None, **kwargs):
+    def render_stuff(self, t, particles=False, disp_field=False, A_p=None, plot_params={}):
         if not self.multi_render:
-            self.init_fig(particles, disp_field, **kwargs)
+            self.init_fig(particles, disp_field, plot_params)
         if t != 1:
             self.ax.set_title(f"t={t}")
         else:
@@ -95,7 +106,7 @@ class PlotToolBox(RunsFactory):
                 p.set_radius(r[i])
             self.collection.set_paths(self.particles)
             if A_p != None:
-                ind_t = np.argwhere(self.lin_ts == t)
+                ind_t = 0
                 self.collection.set_array(A_p[ind_t])
                 self.collection.set_clim(A_p[ind_t].min(), A_p[ind_t].max())
         if disp_field:
@@ -112,18 +123,27 @@ class PlotToolBox(RunsFactory):
         else:
             return self.collection, self.quiv,
 
-    def movie(self, save, log=False, n_frames = 'all', fps=8, interval=50, **kwargs):
+    def movie(self, particles=False, disp_field=False, A_p=None, log=False, \
+              n_frames = 'all', fps=8, plot_params={}, save=None):
         self.multi_render = True
-        self.init_fig(**kwargs)
+        self.init_fig(particles, disp_field, plot_params)
         if not log:
             ts = self.lin_ts
         else:
             ts = self.log_ts
         if n_frames != 'all':
             ts = ts[:n_frames]
-        flow = animation.FuncAnimation(self.fig, partial(self.render_stuff, **kwargs), frames=ts, interval=interval, blit=True)
+        flow = animation.FuncAnimation(self.fig, partial(self.render_stuff, 
+                                                         particles, 
+                                                         disp_field, 
+                                                         A_p, 
+                                                         plot_params), 
+                                        frames=ts, interval=50, blit=True)
         writermp4 = animation.FFMpegWriter(fps=fps)
-        flow.save(f"{save}", writer=writermp4)
+        if save == None:
+            plt.show()
+        else:
+            flow.save(f"{save}", writer=writermp4)
 
     def Pshift(self, a):
         # Periodic shift in main box of size L
