@@ -51,7 +51,7 @@ class PlotToolBox(RunsFactory):
 
         return fig, ax, cbar_ax
 
-    def init_fig(self, particles, disp_field, plot_params):
+    def init_fig(self, particles, disp_field, A_p, plot_params):
         # Set the particle-related parameters using .get() to allow defaults
         c_p = plot_params.get('c_p', 'grey')
         cmap_p = plot_params.get('cmap_p', 'Blues')
@@ -74,12 +74,12 @@ class PlotToolBox(RunsFactory):
             self.c0 = self.load_cfg(t=1)
             x, y, r = self.c0; x_box, y_box = [self.Pshift(a) for a in [x, y]]
             dX, dY = [[0]*self.N for _ in range(2)]
-            if self.cbar_ax == None:
-                self.particles = [Circle((x_box[i], y_box[i]), r[i], facecolor=c_p, linewidth=lw_p, alpha=alpha_p, clip_on=False) for i in range(self.N)]
+            if A_p is None:
+                self.particles = [Circle((x_box[i], y_box[i]), r[i], facecolor=c_p, linewidth=lw_p, alpha=alpha_p) for i in range(self.N)]
                 self.collection = PatchCollection(self.particles, match_original=True)
             else:
-                self.particles = [Circle((x_box[i], y_box[i]), r[i], linewidth=lw_p, alpha=alpha_p, clip_on=False) for i in range(self.N)]
-                self.collection = PatchCollection(self.particles, cmap=c_p, match_original=True)
+                self.particles = [Circle((x_box[i], y_box[i]), r[i], linewidth=lw_p, alpha=alpha_p) for i in range(self.N)]
+                self.collection = PatchCollection(self.particles, cmap=cmap_p, match_original=True)
             self.ax.add_collection(self.collection)
             # scat = self.ax.scatter([], [], s=[], color=c_p, alpha=alpha_p, linewidths=lw_p)
         if disp_field:
@@ -93,7 +93,7 @@ class PlotToolBox(RunsFactory):
 
     def render_stuff(self, t, particles=False, disp_field=False, A_p=None, plot_params={}):
         if not self.multi_render:
-            self.init_fig(particles, disp_field, plot_params)
+            self.init_fig(particles, disp_field, A_p, plot_params)
         if t != 1:
             self.ax.set_title(f"t={t}")
         else:
@@ -105,9 +105,9 @@ class PlotToolBox(RunsFactory):
                 p.set_center((x_box[i], y_box[i]))
                 p.set_radius(r[i])
             self.collection.set_paths(self.particles)
-            if A_p != None:
-                ind_t = 0
-                self.collection.set_array(A_p[ind_t])
+            if A_p is not None:
+                ind_t = np.argwhere(self.lin_ts == t)[0]
+                self.collection.set_array(np.squeeze(A_p[ind_t]))
                 self.collection.set_clim(A_p[ind_t].min(), A_p[ind_t].max())
         if disp_field:
             dX = x - self.c0[0]
@@ -126,18 +126,18 @@ class PlotToolBox(RunsFactory):
     def movie(self, particles=False, disp_field=False, A_p=None, log=False, \
               n_frames = 'all', fps=8, plot_params={}, save=None):
         self.multi_render = True
-        self.init_fig(particles, disp_field, plot_params)
+        self.init_fig(particles, disp_field, A_p, plot_params)
         if not log:
             ts = self.lin_ts
         else:
-            ts = self.log_ts
+            ts = self.log_ts 
         if n_frames != 'all':
             ts = ts[:n_frames]
         flow = animation.FuncAnimation(self.fig, partial(self.render_stuff, 
-                                                         particles, 
-                                                         disp_field, 
-                                                         A_p, 
-                                                         plot_params), 
+                                                         particles=particles, 
+                                                         disp_field=disp_field, 
+                                                         A_p=A_p, 
+                                                         plot_params=plot_params), 
                                         frames=ts, interval=50, blit=True)
         writermp4 = animation.FFMpegWriter(fps=fps)
         if save == None:
