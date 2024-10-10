@@ -26,10 +26,11 @@ class PlotToolBox(RunsFactory):
         self.run = self.db[idx]
         self.N = self.run["N"]
         self.L = np.sqrt(self.N)/2
-        self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False)
+        self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False, dtype=int)
         self.lin_ts[0] += 1
         self.log_ts = np.unique(np.logspace(0, np.log10(self.run['steps']), self.run['logPoints'], dtype=int))
         self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize, fontsize, linewidth, facecolor, cbar)
+        self.multi_render = False
 
     @staticmethod
     def make_canvas(figsize=(7,7), fontsize=20, linewidth=2.5, facecolor='black', cbar=True):
@@ -76,6 +77,8 @@ class PlotToolBox(RunsFactory):
         self.ax.set_ylim([-self.L, self.L])
 
     def render_stuff(self, t, particles=False, disp_field=False, C_p=False, **kwargs):
+        if not self.multi_render:
+            self.init_fig(particles, disp_field, **kwargs)
         if t != 1:
             self.ax.set_title(f"t={t}")
         else:
@@ -92,15 +95,18 @@ class PlotToolBox(RunsFactory):
             dX = x - self.c0[0]
             dY = y - self.c0[1]
             dR = np.hypot(dX, dY)
-            xy = np.vstack((x_box, y_box)).T
-            self.quiv.set_offsets(xy)
+            # xy = np.vstack((x_box, y_box)).T
+            # self.quiv.set_offsets(xy)
             self.quiv.set_UVC(dX, dY, np.hypot(dX, dY))
             self.quiv.norm.vmin = dR.min()
             self.quiv.norm.vmax = dR.max()
-
-        return self.collection, self.quiv,
+        if not self.multi_render:
+            plt.savefig("test2.jpg")
+        else:
+            return self.collection, self.quiv,
 
     def movie(self, save, log=False, n_frames = 'all', fps=8, interval=50, **kwargs):
+        self.multi_render = True
         self.init_fig(**kwargs)
         if not log:
             ts = self.lin_ts
