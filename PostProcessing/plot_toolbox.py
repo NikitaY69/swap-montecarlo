@@ -12,7 +12,8 @@ from smc_db import RunsFactory
 from colorama import Fore, Style
 
 class PlotToolBox(RunsFactory):
-    def __init__(self, root, idx=False, figsize=(7,7), facecolor='black', cbar=True):
+    def __init__(self, root, idx=False, figsize=(7,7), facecolor='black', cbar=True, \
+                 cbar_lim=None, cbar_label=None):
         '''
         This class gives tools to plot various quantities (observables aside) 
         of interest in the context of SMC runs.
@@ -30,6 +31,8 @@ class PlotToolBox(RunsFactory):
         self.lin_ts[0] += 1
         self.log_ts = np.unique(np.logspace(0, np.log10(self.run['steps']), self.run['logPoints'], dtype=int))
         self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize=figsize, facecolor=facecolor, cbar=cbar)
+        self.cbar_lim = cbar_lim
+        self.cbar_label = cbar_label
         self.multi_render = False
 
     @staticmethod
@@ -80,6 +83,7 @@ class PlotToolBox(RunsFactory):
             else:
                 self.particles = [Circle((x_box[i], y_box[i]), r[i], linewidth=lw_p, alpha=alpha_p) for i in range(self.N)]
                 self.collection = PatchCollection(self.particles, cmap=cmap_p, match_original=True)
+                cbar = self.fig.colorbar(self.collection, cax=self.cbar_ax, label=self.cbar_label)
             self.ax.add_collection(self.collection)
             # scat = self.ax.scatter([], [], s=[], color=c_p, alpha=alpha_p, linewidths=lw_p)
         if disp_field:
@@ -108,7 +112,11 @@ class PlotToolBox(RunsFactory):
             if A_p is not None:
                 ind_t = np.argwhere(self.lin_ts == t)[0]
                 self.collection.set_array(np.squeeze(A_p[ind_t]))
-                self.collection.set_clim(A_p[ind_t].min(), A_p[ind_t].max())
+                if self.cbar_lim is None:
+                    c_min, c_max = A_p[ind_t].min(), A_p[ind_t].max()
+                else:
+                    c_min, c_max = self.cbar_lim
+                self.collection.set_clim(c_min, c_max)
         if disp_field:
             dX = x - self.c0[0]
             dY = y - self.c0[1]
