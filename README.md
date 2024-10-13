@@ -2,7 +2,7 @@
 
 This repository provides a C++ implementation of Swap Monte Carlo (SMC) simulations
 for 2-dimensional continuous polydisperse liquids with unit density. The SMC algorithm consists in adding a supplementary trial move: exchanging particle diameters. The latter has proven to drastically speed up glassy dynamics when combined with casual displacement moves. <br>
-For informations about the model and the algorithm used, please refer to [A. Ninarello et al., Phys. Rev. X 7, 021039 (2019)](https://link.aps.org/doi/10.1103/PhysRevX.7.021039) and [L. Berthier et al., J. Stat. Mech. (2019) 064004](https://iopscience.iop.org/article/10.1088/1742-5468/ab1910). 
+For informations about the model and the algorithm used, please refer to [A. Ninarello _et al._, Phys. Rev. X 7, 021039 (2019)](https://link.aps.org/doi/10.1103/PhysRevX.7.021039) and [L. Berthier _et al._, J. Stat. Mech. (2019) 064004](https://iopscience.iop.org/article/10.1088/1742-5468/ab1910). 
 
 A python post-processing package is also made available: one can refer to `PostProcessing/README.md` for instructions for using it.
 
@@ -82,6 +82,7 @@ A downside for this is that **you must manually enter the number of particles an
 ### Observables-only
 
 ### Runs continuation
+_This branch is still under development. Do not use it yet: an update will come soon._
 
 ## Workflow example
 
