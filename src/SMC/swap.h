@@ -67,7 +67,7 @@ void UpdateAge(int cycle), UpdateNL(), UpdateNN(), UpdateRL();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2),
        V(double xj, double yj, double rj, int j);
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
-       DispCorrLoc(int j), DispCorr(), C_sigma(), whichObs(std::string obs);
+       DispCorrLoc(int j), DispCorr(), C_sigma(), whichObs(std::string obs, int cycl);
 std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr(), SigmaScan(int j);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int n_log, int n_lin);
 
