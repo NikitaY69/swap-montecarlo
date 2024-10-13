@@ -30,8 +30,8 @@ EXEC_NAME --input INPUT_FILE \
           [--MSD --Cb --Fs --U]
 ```
 
-- `INPUT_FILE`: path to starting configuration with data structure `X Y SIGMA` repeated `N` times (see `tutorial/cfg.xy` for example)
-- `OUTDIR`: path of output directory
+- `input`: path to starting configuration with data structure `X Y SIGMA` repeated `N` times (see `tutorial/cfg.xy` for example)
+- `outdir`: path of output directory
 - `N`: number of interacting particles
 - `T`: temperature in reduced units
 - `tau`: single-run time (as in aging plots, time after which observables are reset)
@@ -44,9 +44,11 @@ EXEC_NAME --input INPUT_FILE \
 
 
 The total number of steps is calculated as in $n_\texttt{steps}=\texttt{tw}*(\texttt{cycles}-1)+\tau$.
-To check-on equilibration, one must use $\texttt{tw}>1$ and $\texttt{cycles}>1$. Usually, one launches a first run with a `tw`=`cycles`=1 to have an approximate of the relaxation time $\tau_\alpha$ with $C_B$ or $F_s$. A good value for `tw` is then slightly below $\tau_\alpha$ using `cycles`>1; finally one reaches equilibrium when 1- no memory-effects are visible on the decorrelation curves and 2- the potential energy is constant.
+To check-on equilibration, one must use $\texttt{tw}>1$ and $\texttt{cycles}>1$. Usually, one launches a first run with a `tw`=`cycles`=1 to have an approximate of the relaxation time $\tau_\alpha$ with $C_B$ or $F_s$. A good value for `tw` is then slightly below $\tau_\alpha$ using `cycles`>1; finally one reaches equilibrium when 1- no memory-effects are visible between different cycles and 2- the potential energy is constant.
 
 ### Production
+Calculating most physical observables relies on having good ensemble statistics. To do so, after reaching equilibrium at desired temperature, one must get observables evolution from different starting configurations. To proceed, you can use the exact same command as in [Thermalization](#thermalization) but with $\texttt{tw}=\texttt{cycles}=1$.<br>
+Most of the time, you can also use a slurm job with arrays each one running a specific starting configuration.
 
 ### Inherent structures
 ### Observables-only
