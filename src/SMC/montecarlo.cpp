@@ -1,20 +1,21 @@
 #include "swap.h"
 
 double dXCM, dYCM;
+int cycle = 0;
+// double swapCount[N] = {0};
 
 // Monte Carlo Simulation
-void MC(std::string in, std::string out, int ss){
-    int ns = 100;
-    int dataCounter = 0, cycleCounter = 0;
+void MC(std::string out, int n_log, int n_lin){
+    int cycleCounter = 0;
     double deltaX[N], deltaY[N], deltaR2[N], R2Max = 0;
     // Building snapshots list (log-spaced)
     std::vector < std::pair <double, double>> pairs;
     std::vector <double> samplePoints, twPoints;
-    double endingPoints[cycles], linPoints[ss];
-    double exponents = log10(tau)/(ss-1);
-
+    double endingPoints[cycles], linPoints[n_lin];
+    double exponents = log10(tau)/(n_log-1);
+    std::string in = out + "configs/";
     for(int c=0; c<cycles; c++){
-        for (int x = 0; x < ss; x++){
+        for (int x = 0; x < n_log; x++){
             double value = tw*c + floor(pow(10,exponents*(x)));
             std::pair <double,double> p = {value, c};
             int f = std::count(pairs.begin(), pairs.end(), p);
@@ -36,18 +37,22 @@ void MC(std::string in, std::string out, int ss){
         endingPoints[c] = c*tw + tau;
     }
     // Linspaced points
-    for (int k=1;k<=ss;k++){
-        linPoints[k] = (tau/(ss))*k;
+    for (int k=1;k<=n_lin;k++){
+        linPoints[k] = (tau/(n_lin))*k;
     }
     // File writing
-    std::ofstream log_obs, log_ploc, log_p;
-    std::string out_ploc = out + "micro_p/";
-    log_obs.open(out + "obs.txt"), 
-    log_p.open(out + "products.txt");
+    std::ofstream log_obs, log_cfg; 
+    // log_ploc, log_p;
+    // log_sigma;
+    std::string out_cfg = out + "configs/";
+    // std::string out_ploc = out + "micro_corr/";
+    // std::string out_sigma = out + "sigma_scan/";
+    log_obs.open(out + "obs.txt");
+    // log_p.open(out + "space_corr.txt");
     log_obs << std::scientific << std::setprecision(8);
-    log_p << std::scientific << std::setprecision(8);
+    // log_p << std::scientific << std::setprecision(8);
     // creating outdir if not existing
-    fs::create_directory(out_ploc);
+    // fs::create_directory(out_ploc);
 
     for(double t_: samplePoints){
         // auto start = std::chrono::high_resolution_clock::now();
@@ -71,11 +76,11 @@ void MC(std::string in, std::string out, int ss){
         dXCM = 0; dYCM = 0;
         if(t!=1){
             for (int i=0;i<N;i++){
-                double deltaX = Xfull[i]-Xref[i], deltaY = Yfull[i]-Yref[i];
-                dXCM += deltaX; dYCM += deltaY;
+                double dX = Xfull[i]-Xref[i], dY = Yfull[i]-Yref[i];
+                dXCM += dX; dYCM += dY;
             } dXCM /= N; dYCM /= N;
         }
-        int cycle = twPoints[dataCounter];
+        // int cycle = twPoints[dataCounter];
         // Configs
         // log_ploc.open(out_ploc + "products_loc_" + std::to_string(t) + ".txt");
         // log_ploc << std::scientific << std::setprecision(8);
@@ -87,23 +92,28 @@ void MC(std::string in, std::string out, int ss){
         //     } log_ploc << std::endl;
         // };
         // log_ploc.close();
-        log_obs << t << " " << cycle << " " << VTotal()/(2*N) << " " <<
-                    MSD() << std::endl;//<< " " << FS(cycle) << " " << CB(cycle) << std::endl;
+
+        log_obs << t << " " << cycle;
+                for (const auto& obs: obsOrder){
+                    log_obs << " " << whichObs(obs.first);
+                } log_obs << std::endl;
+
         // log_p << t << " ";
         // std::vector <double> disp = MicroDispCorr();
         // for (int k=0;k<nr;k++){
         //         log_p << disp[k] << " ";
         //     } log_p << std::endl;
         // saving format: timestep Vtot MSD Fs CB 
-        dataCounter++;
+
+        // dataCounter++;
 
         // auto end = std::chrono::high_resolution_clock::now();
         // std::chrono::duration<double> duration = end - start;
         // std::cout << duration.count() << std::endl;
         std::cout << t << std::endl;
     }
-    log_obs.close(), 
-    log_p.close();
+    log_obs.close();
+    // log_p.close();
 }
 
 //  Tries displacing one particle j by vector dr = (dx, dy)
@@ -138,13 +148,22 @@ void TrySwap(int j, int k){
             double Rnew = S[k];
             S[k] = S[j];
             S[j] = Rnew;
+            // swapCount[j] += 1; swapCount[k] += 1;
         }
         else if (exp(-deltaE/T) > ranf()){
             double Rnew = S[k];
             S[k] = S[j];
             S[j] = Rnew;
+            // swapCount[j] += 1; swapCount[k] += 1;
         }
     } else{
         // pass
     }
+}
+
+double whichObs(std::string obs){
+    if (obs=="MSD") return MSD();
+    else if (obs=="U") return VTotal()/(2*N);
+    else if (obs=="Cb") return CB(cycle);
+    else if (obs=="Fs") return FS(cycle);
 }

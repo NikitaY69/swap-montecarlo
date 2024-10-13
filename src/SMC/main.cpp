@@ -1,0 +1,115 @@
+#include "swap.h"
+
+// Default run parameters
+int N = 5;
+double Size = std::sqrt (N);
+double T = 0.04; 
+int tau = 100000;
+int tw = 1;
+int cycles = 1;
+int steps = tw*(cycles-1)+tau;
+int linPoints = 50;
+int logPoints = 50;
+double p_swap = 0.2;
+const int nr = 50;
+const int ns = 100;
+std::string algo;
+
+// Setting arrays
+double *X = nullptr, *Y = nullptr, *S = nullptr, *Sref = nullptr, *X0 = nullptr, *Y0 = nullptr;
+double *Xfull = nullptr, *Yfull = nullptr, *Xref = nullptr, *Yref = nullptr;
+std::vector < std::vector <double>> Xtw, Ytw;
+std::vector < std::vector<int> > NL, NN;
+std::vector < std::vector < std::vector <int>>> NN_tw, RL;
+std::vector <std::pair <std::string, int>> obsOrder;
+
+std::string input;
+std::string outdir;
+
+//-----------------------------------------------------------------------------
+//  main.cpp
+int main(int argc, const char * argv[]) {
+    
+    // Random number generator
+    srand(time(NULL)*1.0);
+
+    // Define the command-line options
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help,h", "produce help message")
+        ("outdir", po::value<std::string>(&outdir)->required(), "set out directory")
+        ("MSD", "Flag to compute MSD")
+        ("Cb", "Flag to compute Cb")
+        ("Fs", "Flag to compute Fs")
+        ("U", "Flag to compute U");
+    // std::string input = motherdir + argv[1];
+    // std::string outdir = motherdir + argv[2] + "results/";
+
+    // Parse the command-line arguments
+    po::variables_map vm;
+    try {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+    } catch (const po::error &ex) {
+        std::cerr << ex.what() << std::endl;
+        return 1;
+    }
+    // Handle the help option
+    if (vm.count("help")) {
+        std::cout << desc << std::endl;
+        return 0;
+    }
+
+    // Parsing the observables in order of appearance
+    int index = 2; // index starts at 2 because 0 and 1 are saved for timesteps
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--MSD") {
+            obsOrder.emplace_back("MSD", index++);
+        } else if (arg == "--Cb") {
+            obsOrder.emplace_back("Cb", index++);
+        } else if (arg == "--Fs") {
+            obsOrder.emplace_back("Fs", index++);
+        } else if (arg == "--U") {
+            obsOrder.emplace_back("U", index++);
+        }
+    }
+
+    // Reading params file
+    ReadParams(outdir);
+
+    // Resizing arrays
+    Size = std::sqrt (N);
+    steps = tw*(cycles-1)+tau;
+    X = new double[N]; Y = new double[N]; S = new double[N]; Sref = new double[N]; 
+    X0 = new double[N]; Y0 = new double[N];
+    Xfull = new double[N]; Yfull = new double[N]; Xref = new double[N]; Yref = new double[N];
+    
+     // Writing new params.txt file
+    std::ofstream params;
+    params.open(outdir + "params.txt");
+    std::string algo;
+    params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "size" << " " 
+           << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints";
+    for (const auto& obs: obsOrder){
+        params << " " << obs.first;
+    } params << std::endl;
+    params << outdir << " " << algo << " " << N << " " << Size << " " << T << " "
+              << steps << " " << linPoints << " " << logPoints;
+    for (const auto& obs: obsOrder){
+        params << " " << obs.second;
+    } params << std::endl;
+    params.close();
+
+    // Do simulation with timer
+    double t0 = time(NULL); // Timer
+    MC(outdir, logPoints, linPoints); 
+    std::cout << "Time taken: " << (time(NULL) - t0) << "s" << std::endl; 
+    std::cout << "Done" << std::endl;
+
+    // Freeing allocated memory
+    delete[] X; delete[] Y; delete[] S; delete[] Sref; delete[] X0; delete[] Y0;
+    delete[] Xfull; delete[] Yfull; delete[] Xref; delete[] Yref;
+
+    return 0;
+}

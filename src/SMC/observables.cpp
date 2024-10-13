@@ -56,6 +56,7 @@ double FS(int cycle){
         for (int i = 0; i < N; i++){
             deltaX = Xfull[i]-Xtw[cycle][i];
             deltaY = Yfull[i]-Ytw[cycle][i];
+            deltaX -= dXCM; deltaY -= dYCM;
             dotProduct = q*((cos(theta*pi/180)*deltaX)+(sin(theta*pi/180)*deltaY));
             sum += cos(dotProduct);
         }
@@ -142,7 +143,6 @@ std::vector <double> MicroDispCorr(){
 
 // Computes the sigma-dependence of the potential energy at the particle level
 std::vector <double> SigmaScan(int j){
-    int ns = 100;
     double dS = 0.002;
     double s;
     std::vector <double> Vs(ns, 0);
@@ -152,13 +152,29 @@ std::vector <double> SigmaScan(int j){
     } return Vs;
 }
 
+// Computes the diameter auto-correlation function
+double C_sigma(){
+    double sigma_m = 1.000218223;
+    double C = 0, C0 = 0;
+    for (int i=0; i<N; i++){
+        double deltaS0 = Sref[i]-sigma_m; double deltaS = S[i]-sigma_m;
+        C0 += deltaS0*deltaS0; C += deltaS*deltaS0;
+    } return C/C0;
+}
+
 // Updates the reference points for the correlation functions
 void UpdateAge(int cycle){
     UpdateNN(); NN_tw.push_back(NN);
-    Xtw.push_back(std::array <double, N>());
-    Ytw.push_back(std::array <double, N>());
+    Xtw.push_back(std::vector <double>());
+    Ytw.push_back(std::vector <double>());
     for (int i=0; i<N; i++){
-        Xtw[cycle][i] = Xfull[i];
-        Ytw[cycle][i] = Yfull[i];
+        Xtw[cycle].push_back(Xfull[i]);
+        Ytw[cycle].push_back(Yfull[i]);
+    }
+}
+
+double whichObs(int idx){
+    if (idx == 0){
+        
     }
 }
