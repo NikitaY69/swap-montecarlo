@@ -1,10 +1,10 @@
 # Swap Monte Carlo algorithm for 2-dimensional polydisperse liquids
 
 This repository provides a C++ implementation of Swap Monte Carlo (SMC) simulations
-for 2-dimensional continuous polydisperse liquids with unit density. <br>
+for 2-dimensional continuous polydisperse liquids with unit density. The SMC algorithm consists in adding a supplementary trial move: exchanging particle diameters. The latter has proven to drastically speed up glassy dynamics when combined with casual displacement moves. <br>
 For informations about the model and the algorithm used, please refer to [A. Ninarello et al., Phys. Rev. X 7, 021039 (2019)](https://link.aps.org/doi/10.1103/PhysRevX.7.021039) and [L. Berthier et al., J. Stat. Mech. (2019) 064004](https://iopscience.iop.org/article/10.1088/1742-5468/ab1910). 
 
-A python post-processing package is also made available. One can refer to `PostProcessing/README.md` for instructions for using the later.
+A python post-processing package is also made available: one can refer to `PostProcessing/README.md` for instructions for using it.
 
 ## Compilation and execution
 On each branch, the module can be compiled with
@@ -39,7 +39,7 @@ EXEC_NAME --input INPUT_FILE \
 - `MSD`, `Cb`, `Fs`, `U`: flags to compute the _Mean-Squared Displacement_, the _bond-breaking correlation function_, the _self-part of the intermediate scattering function_ and the _average potential energy_
 
 
-Because the model has a density of one, the size of the system is simply taken as $L=\sqrt{N}$. Particles then evolve in a box $[-L/2,L/2]\times [-L/2,L/2]$ with periodic boundary conditions. <br>
+Because the model has a density of one, the size of the system is simply taken as $L=\sqrt{N}$. Particles then interact with each other in a box $[-L/2,L/2]\times [-L/2,L/2]$ with the minimum image convention. <br>
 The chosen unit of time is one monte-carlo **sweep** (that is $N$ consecutive displacement/swap trials). The total number of steps is calculated as in $n_\texttt{steps}=\texttt{tw}*(\texttt{cycles}-1)+\tau$.
 
 ## How to use it ?
