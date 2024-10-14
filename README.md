@@ -80,6 +80,17 @@ A downside for this is that **you must manually enter the number of particles an
 - $\texttt{SIDE}=\sqrt{N}$ with our model
 
 ### Observables-only
+If you have ran a simulation without any observable flag, it is still possible to
+compute them *after* the simulation has ended. Using the corresponding executable
+(compiled from `observables-only`), the command is simpler than before
+```
+EXEC_NAME --outdir OUT_DIRECTORY [--MSD --Cb --Fs --U]
+```
+- `outdir`: SMC output directory (the simulation must be ended: if there is no
+`params.txt` file or `configs/` directory, it will return an error)
+- `MSD`, `Cb`, `Fs`, `U`: check the master command
+
+An `obs.txt` file will automatically be created in the existing directory with all demanded observables.
 
 ### Runs continuation
 _This branch is still under development. Do not use it yet: an update will come soon._
