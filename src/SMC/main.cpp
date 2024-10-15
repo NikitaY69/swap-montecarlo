@@ -82,7 +82,10 @@ int main(int argc, const char * argv[]) {
             obsOrder.emplace_back("U", index++);
         }
     }
-
+    std::string p_file = "params.txt";
+    if (index==2){
+        p_file = "params_pre_obs.txt"; // in case no observable was requested
+    }
     // Resizing arrays
     Size = std::sqrt (N);
     steps = tw*(cycles-1)+tau;
