@@ -11,7 +11,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib.colors import TwoSlopeNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # Runs
-from smc_db import RunsFactory
+from .smc_db import RunsFactory
 # Colorama
 from colorama import Fore, Style
 
@@ -43,6 +43,8 @@ class PlotToolBox(RunsFactory):
 
         cbar : bool
             whether or not to add a colorbar
+
+        cbar_lim : tuple
         '''
         RunsFactory.__init__(self, root)
         if idx == False:
