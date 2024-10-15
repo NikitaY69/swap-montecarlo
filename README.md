@@ -14,17 +14,7 @@ g++ *.cpp -o EXEC_NAME -lstdc++fs -O2 -mfma -mbmi2 -flto -lboost_program_options
 ```
 The executable is then parsed as follows
 ```
-EXEC_NAME --input INPUT_FILE \ 
-          --outdir OUT_DIRECTORY \
-          --N 5 \
-          --T 0.04
-          --tau 100000 \
-          --tw 1 \
-          --cycles 1 \
-          --lin 50 \
-          --log 50 \
-          --p_swap 0.2 \
-          [--MSD --Cb --Fs --U]
+EXEC_NAME --input INPUT_FILE --outdir OUT_DIRECTORY --N 5 --T 0.04 --tau 100000 --tw 1 --cycles 1 --lin 50 --log 50 --p_swap 0.2 [--MSD --Cb --Fs --U]
 ```
 - `input`: path to starting configuration with data structure `X Y SIGMA` repeated `N` times (see `tutorial/cfg.xy` for example)
 - `outdir`: path of output directory
