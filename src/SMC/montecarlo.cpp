@@ -71,7 +71,7 @@ void MC(std::string out, int n_log, int n_lin){
             UpdateAge(cycleCounter); cycleCounter++;
         } 
         
-        UpdateNL(); // UpdateNN(); UpdateRL(); // updating nearest neighbours
+        UpdateNL(); UpdateNN(); // UpdateRL(); // updating nearest neighbours
         
         dXCM = 0; dYCM = 0;
         if(t!=1){
