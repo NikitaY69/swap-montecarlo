@@ -1,7 +1,8 @@
 #include "swap.h"
 
 double dXCM, dYCM;
-int cycle = 0;
+int dataCounter=0;
+int cycle=0;
 // double swapCount[N] = {0};
 
 // Monte Carlo Simulation
@@ -48,6 +49,10 @@ void MC(std::string out, int n_log, int n_lin){
     // std::string out_ploc = out + "micro_corr/";
     // std::string out_sigma = out + "sigma_scan/";
     log_obs.open(out + "obs.txt");
+    log_obs << "t" << " " << "cycle";
+    for (std::string obs: allObs){
+        log_obs << " " << obs;
+    } log_obs << std::endl;
     // log_p.open(out + "space_corr.txt");
     log_obs << std::scientific << std::setprecision(8);
     // log_p << std::scientific << std::setprecision(8);
@@ -94,8 +99,8 @@ void MC(std::string out, int n_log, int n_lin){
         // log_ploc.close();
 
         log_obs << t << " " << cycle;
-                for (const auto& obs: obsOrder){
-                    log_obs << " " << whichObs(obs.first);
+                for (std::string obs: allObs){
+                    log_obs << " " << whichObs(obs, cycle);
                 } log_obs << std::endl;
 
         // log_p << t << " ";
@@ -161,9 +166,9 @@ void TrySwap(int j, int k){
     }
 }
 
-double whichObs(std::string obs){
+double whichObs(std::string obs, int cycl){
     if (obs=="MSD") return MSD();
     else if (obs=="U") return VTotal()/(2*N);
-    else if (obs=="Cb") return CB(cycle);
-    else if (obs=="Fs") return FS(cycle);
+    else if (obs=="Cb") return CB(cycl);
+    else if (obs=="Fs") return FS(cycl);
 }

@@ -29,7 +29,6 @@ extern int logPoints;
 extern double p_swap; //Swap-attempt probability
 extern const int nr; // Number of radius calculations for the correlation lengths
 extern const int ns; // Number of sigma calculations for the energy scan
-extern std::string algo;
 
 // Model parameters
 extern double Size; //44.721359550000003; //Size of the system
@@ -56,7 +55,7 @@ extern std::vector < std::vector <double>> Xtw, Ytw;
 // Xref positition at t=0
 // Xtw position at last aging update
 extern double dXCM, dYCM;
-extern std::vector <std::pair <std::string, int>> obsOrder;
+extern std::vector < std::string > allObs;
 
 //  Neighbour Lists
 extern std::vector < std::vector<int> > NL, NN;
@@ -71,7 +70,7 @@ void UpdateAge(int cycle), UpdateNL(), UpdateNN(), UpdateRL();
 double PairPotential(double x1, double y1, double s1, double x2, double y2, double s2),
        V(double xj, double yj, double rj, int j);
 double VTotal(), CBLoc(int cycle, int j), CB(int cycle), MSD(), FS(int cycle),
-       DispCorrLoc(int j), DispCorr(), C_sigma(), whichObs(std::string obs);
+       DispCorrLoc(int j), DispCorr(), C_sigma(), whichObs(std::string obs, int cycl);
 std::vector <double> MicroDispCorrLoc(int j), MicroDispCorr(), SigmaScan(int j);
 void TryDisp(int j), TrySwap(int j, int k), MC(std::string out, int n_log, int n_lin);
 

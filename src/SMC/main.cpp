@@ -20,7 +20,7 @@ double *Xfull = nullptr, *Yfull = nullptr, *Xref = nullptr, *Yref = nullptr;
 std::vector < std::vector <double>> Xtw, Ytw;
 std::vector < std::vector<int> > NL, NN;
 std::vector < std::vector < std::vector <int>>> NN_tw, RL;
-std::vector <std::pair <std::string, int>> obsOrder;
+std::vector < std::string > allObs;
 
 std::string outdir, algo;
 
@@ -59,17 +59,16 @@ int main(int argc, const char * argv[]) {
     }
 
     // Parsing the observables in order of appearance
-    int index = 2; // index starts at 2 because 0 and 1 are saved for timesteps
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--MSD") {
-            obsOrder.emplace_back("MSD", index++);
+            allObs.push_back("MSD");
         } else if (arg == "--Cb") {
-            obsOrder.emplace_back("Cb", index++);
+            allObs.push_back("Cb");
         } else if (arg == "--Fs") {
-            obsOrder.emplace_back("Fs", index++);
+            allObs.push_back("Fs");
         } else if (arg == "--U") {
-            obsOrder.emplace_back("U", index++);
+            allObs.push_back("U");
         }
     }
 
@@ -82,21 +81,6 @@ int main(int argc, const char * argv[]) {
     X = new double[N]; Y = new double[N]; S = new double[N]; Sref = new double[N]; 
     X0 = new double[N]; Y0 = new double[N];
     Xfull = new double[N]; Yfull = new double[N]; Xref = new double[N]; Yref = new double[N];
-    
-     // Writing new params.txt file
-    std::ofstream params;
-    params.open(outdir + "params.txt");
-    params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "size" << " " 
-           << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints";
-    for (const auto& obs: obsOrder){
-        params << " " << obs.first;
-    } params << std::endl;
-    params << outdir << " " << algo << " " << N << " " << Size << " " << T << " "
-              << steps << " " << linPoints << " " << logPoints;
-    for (const auto& obs: obsOrder){
-        params << " " << obs.second;
-    } params << std::endl;
-    params.close();
 
     // Do simulation with timer
     double t0 = time(NULL); // Timer
