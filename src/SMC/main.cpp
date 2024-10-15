@@ -109,7 +109,7 @@ int main(int argc, const char * argv[]) {
     
      // Writing params.txt file
     std::ofstream params;
-    params.open(outdir + "params.txt");
+    params.open(p_file);
     std::string algo;
     if (p_swap==0) algo = "MC"; else algo = "SWAP";
     params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "size" << " " 
