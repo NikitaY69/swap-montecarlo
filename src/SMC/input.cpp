@@ -3,7 +3,7 @@
 // Read params file
 void ReadParams(std::string outdir){
     std::string line;
-    std::ifstream input_file(outdir + "params.txt");
+    std::ifstream input_file(outdir + "params_pre_obs.txt");
     if (input_file.is_open()){
         int idx = 0; // line index
         while (std::getline(input_file, line)){
@@ -16,7 +16,7 @@ void ReadParams(std::string outdir){
         input_file.close();
         
     } else {
-        std::string error = outdir + "params.txt" + " not found";
+        std::string error = outdir + "params_pre_obs.txt" + " not found";
         throw error;
     }
 }
