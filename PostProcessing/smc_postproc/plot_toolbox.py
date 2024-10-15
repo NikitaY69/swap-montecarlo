@@ -53,9 +53,9 @@ class PlotToolBox(RunsFactory):
         self.run = self.db[idx]
         self.N = self.run["N"]
         self.L = np.sqrt(self.N)/2
-        self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False, dtype=int)
+        self.lin_ts = np.linspace(0, self.run['tau'], self.run['linPoints'], endpoint=False, dtype=int)
         self.lin_ts[0] += 1
-        self.log_ts = np.unique(np.logspace(0, np.log10(self.run['steps']), self.run['logPoints'], dtype=int))
+        self.log_ts = np.unique(np.logspace(0, np.log10(self.run['tau']), self.run['logPoints'], dtype=int))
 
         # Fig attributes
         self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize=figsize, facecolor=facecolor, cbar=cbar)

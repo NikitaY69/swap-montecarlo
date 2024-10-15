@@ -9,8 +9,8 @@ class RunsFactory():
     def __init__(self, root):
         '''
         This class helps managing runs generated from the SMC module.
-        The database is constructed upon 7 tables: 
-        rootdir, algorithm, N, T, steps, linPoints and logPoints
+        The database is constructed upon 9 tables: 
+        rootdir, N, T, tau, tw, cycles, linPoints, logPoints and p_swap
         '''
         self.root = root
         try:
@@ -64,15 +64,16 @@ class RunsFactory():
             print(f'{Fore.RED}····································································\
                     {Style.RESET_ALL}')
 
-    def get_observable(self):
-        return None
+    # def get_observable(self):
+    #     return None
     
-    def get_cfg(self):
-        return None
+    # def get_cfg(self):
+    #     return None
     
     @staticmethod
     def pprint(dic):
-        key_order = ['rootdir', 'algorithm', 'N', 'T', 'steps', 'linPoints', 'logPoints']
+        key_order = ['rootdir', 'N', 'T', 'tau', 'tw', 'cycles', 'logPoints', \
+                     'linPoints', 'p_swap']
         for key in key_order:
             print(f'{Fore.CYAN}{key}{Style.RESET_ALL}: {dic[key]}')
 
