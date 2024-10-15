@@ -18,7 +18,7 @@ class Observables(RunsFactory):
         obs_ = np.empty(shape=(len(self.ensemble), len(self.ts)))
         for i, run in enumerate(self.ensemble):
             obs_[i] = np.genfromtxt(f'{run["rootdir"]}/obs.txt', delimiter='', \
-                                    names=True)
+                                    names=True)[obs]
         
         return np.mean(obs_, axis=0)
 
