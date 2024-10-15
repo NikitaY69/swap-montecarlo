@@ -13,7 +13,6 @@ int logPoints = 50;
 double p_swap = 0.2;
 const int nr = 50;
 const int ns = 100;
-std::string algo;
 
 // Setting arrays
 double *X = nullptr, *Y = nullptr, *S = nullptr, *Sref = nullptr, *X0 = nullptr, *Y0 = nullptr;
@@ -23,8 +22,7 @@ std::vector < std::vector<int> > NL, NN;
 std::vector < std::vector < std::vector <int>>> NN_tw, RL;
 std::vector <std::pair <std::string, int>> obsOrder;
 
-std::string input;
-std::string outdir;
+std::string outdir, algo;
 
 //-----------------------------------------------------------------------------
 //  main.cpp
@@ -88,7 +86,6 @@ int main(int argc, const char * argv[]) {
      // Writing new params.txt file
     std::ofstream params;
     params.open(outdir + "params.txt");
-    std::string algo;
     params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "size" << " " 
            << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints";
     for (const auto& obs: obsOrder){
