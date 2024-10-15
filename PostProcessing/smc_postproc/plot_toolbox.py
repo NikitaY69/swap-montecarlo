@@ -11,7 +11,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib.colors import TwoSlopeNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # Runs
-from smc_db import RunsFactory
+from .smc_db import RunsFactory
 # Colorama
 from colorama import Fore, Style
 
@@ -43,6 +43,8 @@ class PlotToolBox(RunsFactory):
 
         cbar : bool
             whether or not to add a colorbar
+
+        cbar_lim : tuple
         '''
         RunsFactory.__init__(self, root)
         if idx == False:
@@ -53,9 +55,9 @@ class PlotToolBox(RunsFactory):
         self.run = self.db[idx]
         self.N = self.run["N"]
         self.L = np.sqrt(self.N)/2
-        self.lin_ts = np.linspace(0, self.run['steps'], self.run['linPoints'], endpoint=False, dtype=int)
+        self.lin_ts = np.linspace(0, self.run['tau'], self.run['linPoints'], endpoint=False, dtype=int)
         self.lin_ts[0] += 1
-        self.log_ts = np.unique(np.logspace(0, np.log10(self.run['steps']), self.run['logPoints'], dtype=int))
+        self.log_ts = np.unique(np.logspace(0, np.log10(self.run['tau']), self.run['logPoints'], dtype=int))
 
         # Fig attributes
         self.fig, self.ax, self.cbar_ax = self.make_canvas(figsize=figsize, facecolor=facecolor, cbar=cbar)
@@ -245,7 +247,9 @@ class PlotToolBox(RunsFactory):
             ts = self.log_ts 
         if n_frames != 'all':
             ts = ts[:n_frames]
-
+            if A_p is not None:
+                A_p = A_p[:n_frames]
+        
         flow = animation.FuncAnimation(self.fig, partial(self.render_stuff, 
                                                          particles=particles, 
                                                          disp_field=disp_field, 

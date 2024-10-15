@@ -1,4 +1,4 @@
-from smc_db import RunsFactory
+from .smc_db import RunsFactory
 import numpy as np
 from colorama import Fore, Style
 
@@ -18,7 +18,7 @@ class Observables(RunsFactory):
         obs_ = np.empty(shape=(len(self.ensemble), len(self.ts)))
         for i, run in enumerate(self.ensemble):
             obs_[i] = np.genfromtxt(f'{run["rootdir"]}/obs.txt', delimiter='', \
-                                    usecols=[run[obs]])
+                                    names=True)[obs]
         
         return np.mean(obs_, axis=0)
 
@@ -36,9 +36,9 @@ class Observables(RunsFactory):
         dummy = self.db[0]
         
         # Timesteps 
-        self.lin_ts = np.linspace(0, dummy['steps'], dummy['linPoints'], endpoint=False)
+        self.lin_ts = np.linspace(0, dummy['tau'], dummy['linPoints'], endpoint=False)
         self.lin_ts[0] += 1
-        self.log_ts = np.unique(np.logspace(0, np.log10(dummy['steps']), dummy['logPoints'], dtype=int))
+        self.log_ts = np.unique(np.logspace(0, np.log10(dummy['tau']), dummy['logPoints'], dtype=int))
 
     # def get_ensemble(self, params):
     #     return None
