@@ -20,7 +20,7 @@ double *Xfull = nullptr, *Yfull = nullptr, *Xref = nullptr, *Yref = nullptr;
 std::vector < std::vector <double>> Xtw, Ytw;
 std::vector < std::vector<int> > NL, NN;
 std::vector < std::vector < std::vector <int>>> NN_tw, RL;
-std::vector <std::pair <std::string, int>> obsOrder;
+std::vector < std::string > allObs;
 
 std::string input;
 std::string outdir;
@@ -69,23 +69,19 @@ int main(int argc, const char * argv[]) {
     }
 
     // Parsing the observables in order of appearance
-    int index = 2; // index starts at 2 because 0 and 1 are saved for timesteps
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--MSD") {
-            obsOrder.emplace_back("MSD", index++);
+            allObs.push_back("MSD");
         } else if (arg == "--Cb") {
-            obsOrder.emplace_back("Cb", index++);
+            allObs.push_back("Cb");
         } else if (arg == "--Fs") {
-            obsOrder.emplace_back("Fs", index++);
+            allObs.push_back("Fs");
         } else if (arg == "--U") {
-            obsOrder.emplace_back("U", index++);
+            allObs.push_back("U");
         }
     }
-    std::string p_file = "params.txt";
-    if (index==2){
-        p_file = "params_pre_obs.txt"; // in case no observable was requested
-    }
+
     // Resizing arrays
     Size = std::sqrt (N);
     steps = tw*(cycles-1)+tau;
@@ -109,19 +105,12 @@ int main(int argc, const char * argv[]) {
     
      // Writing params.txt file
     std::ofstream params;
-    params.open(p_file);
-    std::string algo;
-    if (p_swap==0) algo = "MC"; else algo = "SWAP";
-    params << "rootdir" << " " << "algorithm" << " " << "N" << " " << "size" << " " 
-           << "T" << " " << "steps" << " " << "linPoints" << " " << "logPoints";
-    for (const auto& obs: obsOrder){
-        params << " " << obs.first;
-    } params << std::endl;
-    params << outdir << " " << algo << " " << N << " " << Size << " " << T << " "
-              << steps << " " << linPoints << " " << logPoints;
-    for (const auto& obs: obsOrder){
-        params << " " << obs.second;
-    } params << std::endl;
+    params.open(outdir + "params.txt");
+    params << "rootdir" << " " << "N" << " " << "T" << " " 
+           << "tau" << " " << "tw" << " " << "cycles" << " " 
+           << "logPoints" << " " << "linPoints" << " " << "p_swap" << std::endl;
+    params << outdir << " " << N << " " << T << " " << tau << " " << tw << " "
+           << cycles << " " << logPoints << " " << linPoints << " " << p_swap << std::endl;
     params.close();
 
     // Read init config

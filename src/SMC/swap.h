@@ -53,7 +53,7 @@ extern std::vector < std::vector <double>> Xtw, Ytw;
 // Xref positition at t=0
 // Xtw position at last aging update
 extern double dXCM, dYCM;
-extern std::vector <std::pair <std::string, int>> obsOrder;
+extern std::vector < std::string > allObs;
 
 //  Neighbour Lists
 extern std::vector < std::vector<int> > NL, NN;

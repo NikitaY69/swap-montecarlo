@@ -49,6 +49,10 @@ void MC(std::string out, int n_log, int n_lin){
     // std::string out_ploc = out + "micro_corr/";
     // std::string out_sigma = out + "sigma_scan/";
     log_obs.open(out + "obs.txt");
+    log_obs << "t" << " " << "cycle";
+    for (std::string obs: allObs){
+        log_obs << " " << obs;
+    } log_obs << std::endl;
     // log_p.open(out + "space_corr.txt");
     log_obs << std::scientific << std::setprecision(8);
     // log_p << std::scientific << std::setprecision(8);
@@ -138,8 +142,8 @@ void MC(std::string out, int n_log, int n_lin){
                 // } log_p << std::endl;
 
                 log_obs << t << " " << cycle;
-                for (const auto& obs: obsOrder){
-                    log_obs << " " << whichObs(obs.first, cycle);
+                for (std::string obs: allObs){
+                    log_obs << " " << whichObs(obs, cycle);
                 } log_obs << std::endl;
 
                 dataCounter++;
