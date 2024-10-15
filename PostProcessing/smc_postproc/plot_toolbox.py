@@ -245,7 +245,9 @@ class PlotToolBox(RunsFactory):
             ts = self.log_ts 
         if n_frames != 'all':
             ts = ts[:n_frames]
-
+            if A_p is not None:
+                A_p = A_p[:n_frames]
+        
         flow = animation.FuncAnimation(self.fig, partial(self.render_stuff, 
                                                          particles=particles, 
                                                          disp_field=disp_field, 
