@@ -1,4 +1,4 @@
-from smc_db import RunsFactory
+from .smc_db import RunsFactory
 import numpy as np
 from colorama import Fore, Style
 
