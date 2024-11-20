@@ -39,4 +39,4 @@ This section only suggests a concise presentation of their functionalities: the 
 - `movie`: same as `render_stuff` but now dynamically
 
 Because both of them (plus the constructor) encompass multiple user-defined specs (canvas, plot types, plot params, etc.), the user can get informations on the methods input-arguments using `help(PlotToolBox.func)` - with `func` being a specific method (`__init__` for the constructor). <br>
-The tutorial remains your best assistant to understand the toolbox usage.
+<!-- The tutorial remains your best assistant to understand the toolbox usage. -->

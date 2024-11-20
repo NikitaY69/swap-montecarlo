@@ -86,12 +86,12 @@ An `obs.txt` file will automatically be created in the existing directory with a
 _This branch is still under development. Do not use it yet: an update will come soon._
 
 ## Workflow example
-
-In `tutorial/tutorial.ipynb`, we provide an example of a complete typical workflow:
+_A tutorial will soon be made available._
+<!-- In `tutorial/tutorial.ipynb`, we provide an example of a complete typical workflow:
 
 1. Run one SMC thermalization run
 1. Ensure equilibration
 1. Produce multiple equilibrated configurations
 1. Visualize the dynamics
 1. Compute inherent structures
-1. Compute and visualize soft modes
+1. Compute and visualize soft modes -->
